@@ -12,10 +12,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 from datetime import timedelta
 
-load_dotenv()
+#load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,9 +50,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     "corsheaders",
-    'appUSERS',
-    'appFOOD',
-    'appCART',
+    'appUSERS.apps.AppusersConfig',
+    'appFOOD.apps.AppfoodConfig',
+    'appCART.apps.AppcartConfig',
 ]
 
 MIDDLEWARE = [
