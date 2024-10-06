@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-lq50bruj9vl$-l1#drn=*iof2z%f%nl!j05(ce#*s$e2xhixc=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['backmobile1.onrender.com']
 
 # CORS allowed 
 CORS_ALLOWED_ORIGINS = [
