@@ -41,6 +41,7 @@ platformdirs==4.2.2
 prompt_toolkit==3.0.45
 pure-eval==0.2.2
 Pygments==2.18.0
+PyMySQL==1.1.1
 PyJWT==2.8.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
