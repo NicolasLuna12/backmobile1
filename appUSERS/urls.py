@@ -7,5 +7,3 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view()),
     path('delete/<str:email>/', views.DeleteUsuarioView.as_view(), name='delete-usuario'),
 ]
-
- 

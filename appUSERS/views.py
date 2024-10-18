@@ -57,14 +57,30 @@ class LogoutView(APIView):
         
 
 
+from rest_framework import generics, authentication, permissions
+from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Usuario
+from .serializers import UsuarioSerializer
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission to only allow owners of an object to edit or delete it.
+    """
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request,
+        # so we'll always allow GET, HEAD or OPTIONS requests.
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Write permissions are only allowed to the owner of the user.
+        return obj == request.user
 
 class DeleteUsuarioView(generics.DestroyAPIView):
     serializer_class = UsuarioSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_object(self):
         email = self.kwargs['email']
@@ -72,5 +88,6 @@ class DeleteUsuarioView(generics.DestroyAPIView):
 
     def delete(self, request, *args, **kwargs):
         usuario = self.get_object()
+        self.check_object_permissions(request, usuario)
         usuario.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT) 
+        return Response(status=status.HTTP_204_NO_CONTENT)
