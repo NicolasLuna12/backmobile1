@@ -51,3 +51,11 @@ class LogoutView(APIView):
         except Exception as e:
             
             return Response({"detalle": "Error inesperado."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class DeleteUsuarioView(generics.DestroyAPIView):
+    serializer_class = UsuarioSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user        
