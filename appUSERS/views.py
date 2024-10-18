@@ -52,10 +52,15 @@ class LogoutView(APIView):
             
             return Response({"detalle": "Error inesperado."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-class DeleteUsuarioView(generics.DestroyAPIView):
-    serializer_class = UsuarioSerializer
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+from django.http import JsonResponse
+from django.views import View
+from .models import Usuario
 
-    def get_object(self):
-        return self.request.user        
+class DeleteUsuarioView(View):
+    def delete(self, request, email):
+        try:
+            usuario = Usuario.objects.get(email=email)
+            usuario.delete()
+            return JsonResponse({'message': 'Usuario eliminado exitosamente.'}, status=204)
+        except Usuario.DoesNotExist:
+            return JsonResponse({'error': 'Usuario no encontrado.'}, status=404)   
