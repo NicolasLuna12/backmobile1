@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'appUSERS.apps.AppusersConfig',
     'appFOOD.apps.AppfoodConfig',
     'appCART.apps.AppcartConfig',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
