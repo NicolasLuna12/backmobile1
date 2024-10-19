@@ -21,10 +21,11 @@ class RetrieveUpdateUsuarioView(generics.RetrieveUpdateAPIView):
 class RetrieveUpdateDeleteUsuarioView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UsuarioSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    #permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         return self.request.user
+    
 
 
 
