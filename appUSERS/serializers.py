@@ -11,18 +11,15 @@ class UsuarioSerializer(serializers.ModelSerializer):
     def create(self,validate_data):
         return get_user_model().objects.create_user(**validate_data)
 
-    def update(self, instance, validated_data):
-        # Si se proporciona un nuevo email, verifica que no esté en uso
-        new_email = validated_data.get('email', None)
-        if new_email and new_email != instance.email:
-            if get_user_model().objects.filter(email=new_email).exists():
-                raise serializers.ValidationError({"email": "Este correo ya está en uso."})
+    def update(self, instance, validate_data):
+        password = validate_data.pop('password', None)
+        user = super().update(instance, validate_data)
 
-        # Actualiza los campos permitidos
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        return instance    
+        if password:
+            user.set_password(password)
+            user.save()
+
+        return user        
 
 class AuthTokenSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -42,5 +39,3 @@ class AuthTokenSerializer(serializers.Serializer):
         
         data['user'] = user
         return data
-
-    
