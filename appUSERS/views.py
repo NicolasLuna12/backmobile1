@@ -54,7 +54,7 @@ class LogoutView(APIView):
         
 class DeleteUsuarioView(generics.DestroyAPIView):
     serializer_class = UsuarioSerializer
-    authentication_classes = [authentication.TokenAuthentication]
+    authentication_classes = [authentication.JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
@@ -64,11 +64,11 @@ class DeleteUsuarioView(generics.DestroyAPIView):
         usuario = self.get_object()
         usuario.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
 class UpdateUsuarioView(generics.UpdateAPIView):
     serializer_class = UsuarioSerializer
-    authentication_classes = [authentication.TokenAuthentication]
+    authentication_classes = [authentication.JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        return self.request.user            
+        return self.request.user
