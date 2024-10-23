@@ -10,3 +10,6 @@ class DetallePedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = DetallePedido
         fields = ["cantidad_productos", "precio_producto", "subtotal"]
+
+class ModificarCantidadSerializer(serializers.Serializer):
+    cantidad = serializers.IntegerField(min_value=1)        

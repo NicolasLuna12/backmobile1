@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import DetallePedido, Pedido, Carrito
 from appFOOD.models import Producto
 from datetime import date, datetime
-from .serializers import DetallePedidoSerializer
+from .serializers import DetallePedidoSerializer, ModificarCantidadSerializer
 from asgiref.sync import sync_to_async
 from appUSERS.models import Usuario
 from rest_framework import status
@@ -139,28 +139,32 @@ class ModificarCantidadProductoCarrito(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request, carrito_id):
-        try:
-            nueva_cantidad = int(request.data.get('cantidad'))
-            carrito_item = Carrito.objects.get(pk=carrito_id)
-            producto = carrito_item.producto
+        serializer = ModificarCantidadSerializer(data=request.data)
+        if serializer.is_valid():
+            nueva_cantidad = serializer.validated_data['cantidad']
+            try:
+                carrito_item = Carrito.objects.get(pk=carrito_id)
+                producto = carrito_item.producto
 
-            if nueva_cantidad > producto.stock + carrito_item.cantidad:
-                return Response({'error': 'Stock insuficiente'}, status=400)
+                if nueva_cantidad > producto.stock + carrito_item.cantidad:
+                    return Response({'error': 'Stock insuficiente'}, status=400)
 
-            diferencia_cantidad = nueva_cantidad - carrito_item.cantidad
-            carrito_item.cantidad = nueva_cantidad
-            carrito_item.save()
+                diferencia_cantidad = nueva_cantidad - carrito_item.cantidad
+                carrito_item.cantidad = nueva_cantidad
+                carrito_item.save()
 
-            producto.stock -= diferencia_cantidad
-            producto.save()
+                producto.stock -= diferencia_cantidad
+                producto.save()
 
-            detalle_item = DetallePedido.objects.get(id_producto_id=carrito_item.producto.id_producto, id_pedido_id=carrito_item.id_pedido)
-            detalle_item.cantidad_productos = nueva_cantidad
-            detalle_item.subtotal = detalle_item.cantidad_productos * detalle_item.precio_producto
-            detalle_item.save()
+                detalle_item = DetallePedido.objects.get(id_producto_id=carrito_item.producto.id_producto, id_pedido_id=carrito_item.id_pedido)
+                detalle_item.cantidad_productos = nueva_cantidad
+                detalle_item.subtotal = detalle_item.cantidad_productos * detalle_item.precio_producto
+                detalle_item.save()
 
-            return Response({'message': 'Cantidad de producto actualizada en el carrito'})
-        except Carrito.DoesNotExist:
-            return Response({"error": "No existe un producto en el carrito con ese id de carrito."}, status=status.HTTP_404_NOT_FOUND)
-        except DetallePedido.DoesNotExist:
-            return Response({"error": "No existe un detalle de pedido para este producto en el carrito."}, status=status.HTTP_404_NOT_FOUND)    
+                return Response({'message': 'Cantidad de producto actualizada en el carrito'})
+            except Carrito.DoesNotExist:
+                return Response({"error": "No existe un producto en el carrito con ese id de carrito."}, status=status.HTTP_404_NOT_FOUND)
+            except DetallePedido.DoesNotExist:
+                return Response({"error": "No existe un detalle de pedido para este producto en el carrito."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
