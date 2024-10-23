@@ -7,5 +7,6 @@ urlpatterns = [
     path('confirmar/', ConfirmarPedido.as_view()),
     path('eliminar/<int:carrito_id>/', EliminarProductoDelCarrito.as_view()),
     path('ver_dashboard/', VerDashboard.as_view()),
+    path('modificar_cantidad/<int:carrito_id>/', ModificarCantidadProductoCarrito.as_view(), name='modificar_cantidad_producto_carrito'),
 ]
 

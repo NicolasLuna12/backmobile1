@@ -134,3 +134,33 @@ class VerDashboard(APIView):
                         for pedido in vistaPedidos]
 
         return Response( { "results": carrito_data} )
+
+class ModificarCantidadProductoCarrito(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, carrito_id):
+        try:
+            nueva_cantidad = int(request.data.get('cantidad'))
+            carrito_item = Carrito.objects.get(pk=carrito_id)
+            producto = carrito_item.producto
+
+            if nueva_cantidad > producto.stock + carrito_item.cantidad:
+                return Response({'error': 'Stock insuficiente'}, status=400)
+
+            diferencia_cantidad = nueva_cantidad - carrito_item.cantidad
+            carrito_item.cantidad = nueva_cantidad
+            carrito_item.save()
+
+            producto.stock -= diferencia_cantidad
+            producto.save()
+
+            detalle_item = DetallePedido.objects.get(id_producto_id=carrito_item.producto.id_producto, id_pedido_id=carrito_item.id_pedido)
+            detalle_item.cantidad_productos = nueva_cantidad
+            detalle_item.subtotal = detalle_item.cantidad_productos * detalle_item.precio_producto
+            detalle_item.save()
+
+            return Response({'message': 'Cantidad de producto actualizada en el carrito'})
+        except Carrito.DoesNotExist:
+            return Response({"error": "No existe un producto en el carrito con ese id de carrito."}, status=status.HTTP_404_NOT_FOUND)
+        except DetallePedido.DoesNotExist:
+            return Response({"error": "No existe un detalle de pedido para este producto en el carrito."}, status=status.HTTP_404_NOT_FOUND)    
