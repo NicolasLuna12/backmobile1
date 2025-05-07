@@ -35,8 +35,7 @@ ALLOWED_HOSTS = ['backmobile1.onrender.com']
 # CORS allowed 
 CORS_ALLOWED_ORIGINS = [
     "https://example.com",
-    "http://localhost:4200",
-    "https://ispcfood.netlify.app/"
+    "http://localhost:4200"
 ]
 
 # Application definition
@@ -103,6 +102,9 @@ DATABASES = {
         'OPTIONS': {
             'sql_mode': 'traditional',
             }
+
+
+
     }
 }
 
