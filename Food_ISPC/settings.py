@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-lq50bruj9vl$-l1#drn=*iof2z%f%nl!j05(ce#*s$e2xhixc=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['backmobile1.onrender.com']
+ALLOWED_HOSTS = ['backmobile1.onrender.com', 'localhost', '127.0.0.1']
 
 # CORS allowed 
 CORS_ALLOWED_ORIGINS = [
@@ -59,13 +59,12 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'Food_ISPC.urls'

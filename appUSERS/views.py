@@ -44,6 +44,7 @@ class CreateTokenView(APIView):
         }, status=status.HTTP_200_OK)
 
 class LogoutView(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):       
