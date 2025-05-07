@@ -4,7 +4,6 @@ from appUSERS.serializers import UsuarioSerializer, AuthTokenSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class CreateUsuarioView(generics.CreateAPIView):
@@ -13,9 +12,10 @@ class CreateUsuarioView(generics.CreateAPIView):
 
 class RetrieveUpdateUsuarioView(generics.RetrieveUpdateAPIView):
     serializer_class = UsuarioSerializer
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     
+
     def get_object(self):
         return self.request.user
 
@@ -54,7 +54,6 @@ class LogoutView(APIView):
             return Response({"detalle": "Error inesperado."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class UpdateProfileView(APIView):
-    authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def put(self, request):
@@ -66,22 +65,25 @@ class UpdateProfileView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class DeleteProfileView(APIView):
-    authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request):
         user = request.user
-        carritos = Carrito.objects.filter(usuario=user)
+        carrito = Carrito.objects.filter(usuario=user).first()
 
-        # Eliminar los carritos asociados con el usuario
-        if carritos.exists():
-            carritos.delete()
+        if carrito and carrito.productos.exists():
+            #return Response({"detalle": "No se puede eliminar el perfil porque el carrito contiene productos."}, status=status.HTTP_400_BAD_REQUEST)
+            user.delete()
         
-        # Eliminar los pedidos asociados (opcional, dependiendo de tu lógica de negocio)
+        if carrito:
+            carrito.delete()
+
+        
         pedidos = Pedido.objects.filter(id_usuario=user)
         if pedidos.exists():
-            pedidos.delete()
+       
+            user.delete()
+            return Response({"detalle": "Perfil eliminado satisfactoriamente."}, status=status.HTTP_200_OK)
 
-        # Finalmente eliminar el usuario
         user.delete()
-        return Response({"detalle": "Perfil eliminado satisfactoriamente."}, status=status.HTTP_200_OK)
+        return Response({"detalle": "Perfil y carrito eliminados satisfactoriamente."}, status=status.HTTP_200_OK)       
