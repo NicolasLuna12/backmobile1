@@ -2,10 +2,11 @@ from django.contrib.auth import get_user_model,authenticate
 from rest_framework import serializers
 
 class UsuarioSerializer(serializers.ModelSerializer):
+    imagen_perfil_url = serializers.CharField(read_only=True)
     
     class Meta:
         model = get_user_model()
-        fields = ['email','password','nombre','apellido','telefono']
+        fields = ['email','password','nombre','apellido','telefono','imagen_perfil_url']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self,validate_data):
