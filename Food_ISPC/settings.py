@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'appUSERS.apps.AppusersConfig',
     'appFOOD.apps.AppfoodConfig',
     'appCART.apps.AppcartConfig',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
@@ -165,4 +167,12 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id_usuario',
     'ACCESS_TOKEN_LIFETIME': timedelta(days=36500),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=36500),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': "djp80kwaj",  # Reemplaza por tu cloud name real
+    'API_KEY': "285359299675698",             # Reemplaza por tu API key real
+    'API_SECRET': "CILwUfSuiDsJ977SrrCvPQcgJz4",       # Reemplaza por tu API secret real
 }
