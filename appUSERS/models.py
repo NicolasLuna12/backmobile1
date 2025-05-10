@@ -3,14 +3,12 @@ from django.contrib.auth.models import (AbstractBaseUser,
                                         PermissionsMixin,
                                         BaseUserManager)
 from cloudinary.models import CloudinaryField
+from appUSERS.utils import validate_image_file
 
 
 # Create your models here.
 
 class UsuarioManager(BaseUserManager):
-
-    
-
     def create_user(self,email,password, **extra_fields):
         if not email:
             raise ValueError('Falta Email')
@@ -39,7 +37,16 @@ class Usuario(AbstractBaseUser,PermissionsMixin):
     password = models.CharField(max_length=128)
     is_staff = models.BooleanField(default=False)  
     is_active = models.BooleanField(default=True)
-    imagen_perfil = CloudinaryField('imagen_perfil', blank=True, null=True)
+    imagen_perfil = CloudinaryField('imagen_perfil', blank=True, null=True,
+                                   folder='perfil_usuarios',
+                                   transformation={
+                                       'quality': 'auto:good',
+                                       'fetch_format': 'auto',
+                                       'width': 300, 
+                                       'height': 300, 
+                                       'crop': 'fill',
+                                       'gravity': 'face'
+                                   })
 
     class Meta:
         managed = True
