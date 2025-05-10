@@ -30,26 +30,13 @@ SECRET_KEY = 'django-insecure-lq50bruj9vl$-l1#drn=*iof2z%f%nl!j05(ce#*s$e2xhixc=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['backmobile1.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['backmobile1.onrender.com']
 
 # CORS allowed 
 CORS_ALLOWED_ORIGINS = [
     "https://example.com",
     "http://localhost:4200",
     "https://ispcfood.netlify.app"
-]
-
-# Permitir el envío de archivos desde el frontend
-CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
 ]
 
 # Application definition
@@ -64,8 +51,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     "corsheaders",
-    'cloudinary',
-    'cloudinary_storage',
     'appUSERS.apps.AppusersConfig',
     'appFOOD.apps.AppfoodConfig',
     'appCART.apps.AppcartConfig',
@@ -80,8 +65,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'Food_ISPC.middleware.FileUploadDebugMiddleware',    
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',    
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -181,12 +165,4 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id_usuario',
     'ACCESS_TOKEN_LIFETIME': timedelta(days=36500),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=36500),
-}
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': "djp80kwaj",  # Reemplaza por tu cloud name real
-    'API_KEY': "285359299675698",             # Reemplaza por tu API key real
-    'API_SECRET': "CILwUfSuiDsJ977SrrCvPQcgJz4",       # Reemplaza por tu API secret real
 }
