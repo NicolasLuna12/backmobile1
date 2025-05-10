@@ -2,8 +2,11 @@ from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser,
                                         PermissionsMixin,
                                         BaseUserManager)
+<<<<<<< HEAD
 from cloudinary.models import CloudinaryField
 from appUSERS.utils import validate_image_file
+=======
+>>>>>>> parent of 640a78d (storage de iamgenes)
 
 
 # Create your models here.
@@ -37,6 +40,7 @@ class Usuario(AbstractBaseUser,PermissionsMixin):
     password = models.CharField(max_length=128)
     is_staff = models.BooleanField(default=False)  
     is_active = models.BooleanField(default=True)
+<<<<<<< HEAD
     imagen_perfil = CloudinaryField('imagen_perfil', blank=True, null=True,
                                    folder='perfil_usuarios',
                                    transformation={
@@ -49,6 +53,8 @@ class Usuario(AbstractBaseUser,PermissionsMixin):
                                    })
     # Campo adicional para guardar la URL completa de la imagen
     imagen_perfil_url = models.URLField(max_length=500, blank=True, null=True)
+=======
+>>>>>>> parent of 640a78d (storage de iamgenes)
 
     class Meta:
         managed = True

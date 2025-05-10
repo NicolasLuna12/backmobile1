@@ -54,8 +54,6 @@ INSTALLED_APPS = [
     'appUSERS.apps.AppusersConfig',
     'appFOOD.apps.AppfoodConfig',
     'appCART.apps.AppcartConfig',
-    'cloudinary',
-    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
@@ -169,6 +167,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=36500),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=36500),
 }
+<<<<<<< HEAD
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
@@ -233,3 +232,5 @@ LOGGING = {
         },
     },
 }
+=======
+>>>>>>> parent of 640a78d (storage de iamgenes)
