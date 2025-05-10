@@ -67,8 +67,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'Food_ISPC.middleware.FileUploadDebugMiddleware',    
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',    
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -176,60 +175,4 @@ CLOUDINARY_STORAGE = {
     'CLOUD_NAME': "djp80kwaj",  # Reemplaza por tu cloud name real
     'API_KEY': "285359299675698",             # Reemplaza por tu API key real
     'API_SECRET': "CILwUfSuiDsJ977SrrCvPQcgJz4",       # Reemplaza por tu API secret real
-}
-
-# Configuración para archivos multimedia
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Formatos aceptados para imágenes de usuario
-CLOUDINARY_STORAGE_ALLOWABLE_FORMATS = ['png', 'jpg', 'jpeg', 'webp']
-
-# Tamaño máximo de archivo permitido (5MB)
-CLOUDINARY_STORAGE_MAX_FILE_SIZE = 5 * 1024 * 1024
-
-# Configuración de logging
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
-            'formatter': 'verbose',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'Food_ISPC': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'appUSERS': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
 }

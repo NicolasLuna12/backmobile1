@@ -1,7 +1,5 @@
 from django.contrib.auth import get_user_model,authenticate
 from rest_framework import serializers
-import cloudinary.uploader
-from appUSERS.utils import validate_image_file
 
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,32 +12,13 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validate_data):
         password = validate_data.pop('password', None)
-        
-        # Si hay una imagen en la solicitud y es un archivo (no una URL de Cloudinary)
-        imagen_perfil = validate_data.get('imagen_perfil', None)
-        if imagen_perfil and not isinstance(imagen_perfil, str):
-            try:
-                # Validar el archivo de imagen
-                validate_image_file(imagen_perfil)
-            except Exception as e:
-                raise serializers.ValidationError({'imagen_perfil': str(e)})
-        
         user = super().update(instance, validate_data)
 
         if password:
             user.set_password(password)
             user.save()
 
-        return user
-        
-    def to_representation(self, instance):
-        """
-        Asegurarse de que la URL de la imagen de perfil sea completa
-        """
-        ret = super().to_representation(instance)
-        if instance.imagen_perfil:
-            ret['imagen_perfil'] = instance.imagen_perfil.url
-        return ret
+        return user        
 
 class AuthTokenSerializer(serializers.Serializer):
     email = serializers.EmailField()
