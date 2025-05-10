@@ -7,7 +7,6 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view()),
     path('update/', views.UpdateProfileView.as_view(), name='update-profile'),
     path('delete/', views.DeleteProfileView.as_view(), name='delete-profile'),
-    path('upload-imagen/', views.SubirImagenPerfilView.as_view(), name='upload-imagen-perfil'),
 ]
 
  

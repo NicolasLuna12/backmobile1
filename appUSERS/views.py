@@ -1,5 +1,4 @@
-from rest_framework import generics, authentication, permissions, status
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import generics,authentication, permissions,status
 from appCART.models import Carrito, Pedido
 from appUSERS.serializers import UsuarioSerializer, AuthTokenSerializer 
 from rest_framework.views import APIView
@@ -9,10 +8,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 class CreateUsuarioView(generics.CreateAPIView):
     serializer_class = UsuarioSerializer
-    parser_classes = (
-        MultiPartParser,
-        FormParser,
-    )
 
 
 class RetrieveUpdateUsuarioView(generics.RetrieveUpdateAPIView):
@@ -45,8 +40,7 @@ class CreateTokenView(APIView):
             'nombre': user.nombre, 
             'apellido': user.apellido,
             'telefono': user.telefono,
-            'admin': user.is_superuser,
-            'imagen_perfil_url': user.imagen_perfil_url
+            'admin': user.is_superuser
         }, status=status.HTTP_200_OK)
 
 class LogoutView(APIView):
@@ -61,25 +55,13 @@ class LogoutView(APIView):
 
 class UpdateProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    parser_classes = (
-        MultiPartParser,
-        FormParser,
-    )
 
     def put(self, request):
         user = request.user
         serializer = UsuarioSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({
-                'email': user.email,
-                'user_id': user.pk, 
-                'nombre': user.nombre, 
-                'apellido': user.apellido,
-                'telefono': user.telefono,
-                'admin': user.is_superuser,
-                'imagen_perfil_url': user.imagen_perfil_url
-            }, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class DeleteProfileView(APIView):
@@ -104,35 +86,4 @@ class DeleteProfileView(APIView):
             return Response({"detalle": "Perfil eliminado satisfactoriamente."}, status=status.HTTP_200_OK)
 
         user.delete()
-        return Response({"detalle": "Perfil y carrito eliminados satisfactoriamente."}, status=status.HTTP_200_OK)
-
-class SubirImagenPerfilView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = (
-        MultiPartParser,
-        FormParser,
-    )
-
-    def post(self, request):
-        if 'imagen' not in request.FILES:
-            return Response({"error": "No se proporcionó ninguna imagen"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            from appUSERS.utils import subir_imagen_a_cloudinary
-            user = request.user
-            imagen = request.FILES['imagen']
-            
-            # Subir la imagen a Cloudinary
-            url_imagen = subir_imagen_a_cloudinary(imagen, user.email)
-            
-            # Actualizar la URL de la imagen de perfil del usuario
-            user.imagen_perfil_url = url_imagen
-            user.save()
-            
-            return Response({
-                "imagen_perfil_url": url_imagen,
-                "mensaje": "Imagen de perfil actualizada con éxito"
-            }, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            return Response({"error": f"Error al subir la imagen: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"detalle": "Perfil y carrito eliminados satisfactoriamente."}, status=status.HTTP_200_OK)       
