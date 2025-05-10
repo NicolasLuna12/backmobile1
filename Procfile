@@ -1,1 +1,1 @@
-web: gunicorn Food_ISPC.Food_ISPC.wsgi
+web: gunicorn Food_ISPC.wsgi
