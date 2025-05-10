@@ -14,18 +14,6 @@ Se ha implementado la funcionalidad para que los usuarios puedan subir y gestion
 - Transformaciones automáticas (redimensionamiento, recorte enfocado en rostros)
 - Optimización automática de calidad y formato
 - Acceso a URLs seguras (HTTPS)
-- Almacenamiento de URLs generadas para mejorar rendimiento
-
-### Scripts de Utilidad
-
-Se han creado varios scripts para facilitar la gestión de imágenes de perfil:
-
-1. `verify_images.py` - Verifica y corrige las URLs de imágenes de perfil
-2. `migrate_images.py` - Migra las URLs de imágenes para usuarios existentes
-3. `create_test_user.py` - Crea un usuario de prueba con imagen de perfil
-4. `test_register.py` - Prueba el registro de usuarios con imágenes
-5. `test_api.py` - Cliente para probar todas las APIs
-6. `test_cloudinary.py` - Verifica la configuración de Cloudinary
 
 ## Instalación
 
@@ -98,30 +86,6 @@ Para probar la funcionalidad de Cloudinary:
 
 ```
 python test_cloudinary.py
-```
-
-Para migrar y actualizar las URLs de imágenes existentes:
-
-```
-python migrate_images.py
-```
-
-Para verificar y corregir las URLs de imágenes de perfil:
-
-```
-python verify_images.py
-```
-
-Para crear un usuario de prueba con imagen de perfil:
-
-```
-python create_test_user.py --imagen ruta/a/tu/imagen.jpg
-```
-
-Para probar el registro de usuarios con imágenes:
-
-```
-python test_register.py --email usuario@ejemplo.com --password clave123 --nombre Juan --apellido Perez --telefono 123456789 --imagen ruta/a/imagen.jpg
 ```
 
 Para probar la API completa, incluyendo la gestión de imágenes:

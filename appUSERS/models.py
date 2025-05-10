@@ -47,28 +47,16 @@ class Usuario(AbstractBaseUser,PermissionsMixin):
                                        'crop': 'fill',
                                        'gravity': 'face'
                                    })
-    # Campo adicional para guardar la URL completa de la imagen
-    imagen_perfil_url = models.URLField(max_length=500, blank=True, null=True)
 
     class Meta:
         managed = True
         db_table = 'usuario'
         verbose_name = 'Usuario'
         verbose_name_plural = 'Usuarios'
-        
     def __unicode__(self):
         return self.nombre
-        
     def __str__(self):
         return self.nombre
-    
-    def save(self, *args, **kwargs):
-        # Si hay una imagen de perfil y no hay URL o se ha cambiado la imagen
-        # entonces actualizamos la URL
-        if self.imagen_perfil:
-            self.imagen_perfil_url = self.imagen_perfil.url
-        
-        super().save(*args, **kwargs)
     
     objects = UsuarioManager()
 
