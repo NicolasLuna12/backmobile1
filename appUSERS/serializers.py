@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model,authenticate
 from rest_framework import serializers
 
 class UsuarioSerializer(serializers.ModelSerializer):
-    imagen_perfil_url = serializers.CharField(read_only=True)
+    imagen_perfil_url = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     
     class Meta:
         model = get_user_model()
@@ -12,9 +12,14 @@ class UsuarioSerializer(serializers.ModelSerializer):
     def create(self,validate_data):
         return get_user_model().objects.create_user(**validate_data)
 
-    def update(self, instance, validate_data):
-        password = validate_data.pop('password', None)
-        user = super().update(instance, validate_data)
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        imagen_perfil_url = validated_data.pop('imagen_perfil_url', None)
+        user = super().update(instance, validated_data)
+
+        if imagen_perfil_url is not None:
+            user.imagen_perfil_url = imagen_perfil_url
+            user.save()
 
         if password:
             user.set_password(password)
