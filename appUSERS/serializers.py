@@ -6,8 +6,11 @@ from appUSERS.utils import validate_image_file
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['email','password','nombre','apellido','telefono','imagen_perfil']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['email','password','nombre','apellido','telefono','imagen_perfil', 'imagen_perfil_url']
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'imagen_perfil_url': {'read_only': True}  # Aseguramos que este campo sea solo de lectura
+        }
 
     def create(self,validate_data):
         return get_user_model().objects.create_user(**validate_data)
@@ -37,13 +40,22 @@ class UsuarioSerializer(serializers.ModelSerializer):
         Asegurarse de que la URL de la imagen de perfil sea completa
         """
         ret = super().to_representation(instance)
-        if instance.imagen_perfil:
+        
+        # Si tenemos URL almacenada, la usamos directamente
+        if instance.imagen_perfil_url:
+            ret['imagen_perfil'] = instance.imagen_perfil_url
+        # Si no hay URL almacenada pero sí hay imagen, generamos la URL
+        elif instance.imagen_perfil:
             ret['imagen_perfil'] = instance.imagen_perfil.url
+            # Actualizar la URL en la base de datos para futuros usos
+            instance.imagen_perfil_url = instance.imagen_perfil.url
+            instance.save(update_fields=['imagen_perfil_url'])
+        
         return ret
 
 class AuthTokenSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    password =serializers.CharField(style ={'input_type' : 'password'}, write_only=True)
+    password = serializers.CharField(style ={'input_type' : 'password'}, write_only=True)
 
     def validate(self,data):
         email = data.get('email')

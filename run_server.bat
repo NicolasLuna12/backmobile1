@@ -11,6 +11,10 @@ python manage.py makemigrations
 python manage.py migrate
 
 echo.
+echo ===== ACTUALIZANDO URLs DE IMÁGENES DE PERFIL =====
+python migrate_images.py
+
+echo.
 echo ===== PROBANDO CONFIGURACION CLOUDINARY =====
 python test_cloudinary.py
 
@@ -18,5 +22,7 @@ echo.
 echo ===== INICIANDO SERVIDOR DE DESARROLLO =====
 echo Para probar las APIs, abra otra terminal y ejecute:
 echo   python test_api.py
+echo Para verificar las imágenes de perfil, ejecute:
+echo   python verify_images.py
 echo.
 python manage.py runserver

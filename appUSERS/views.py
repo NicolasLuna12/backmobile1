@@ -46,8 +46,16 @@ class CreateTokenView(APIView):
         }
         
         # Incluir la URL de la imagen de perfil si existe
-        if user.imagen_perfil:
+        # Primero verificamos si hay una URL ya almacenada
+        if user.imagen_perfil_url:
+            response_data['imagen_perfil'] = user.imagen_perfil_url
+        # Si no hay URL almacenada pero sí hay imagen, la generamos y guardamos
+        elif user.imagen_perfil:
             response_data['imagen_perfil'] = user.imagen_perfil.url
+            
+            # Guardar la URL para uso futuro
+            user.imagen_perfil_url = user.imagen_perfil.url
+            user.save(update_fields=['imagen_perfil_url'])
         
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -75,20 +83,23 @@ class UpdateProfileView(APIView):
         # Para depuración
         print(f"Datos recibidos: {data}")
         print(f"Archivos recibidos: {request.FILES}")
-        
-        # Si hay imagen de perfil en los archivos, la añadimos a los datos
-        if 'imagen_perfil' in request.FILES:
-            # La imagen ya se manejará adecuadamente por el serializer
-            pass
             
         serializer = UsuarioSerializer(user, data=data, partial=True)
         if serializer.is_valid():
             try:
                 user_updated = serializer.save()
-                # Construir la respuesta con la URL completa de la imagen
+                # Asegurarse de que la imagen_perfil_url esté actualizada
+                if user_updated.imagen_perfil and not user_updated.imagen_perfil_url:
+                    user_updated.imagen_perfil_url = user_updated.imagen_perfil.url
+                    user_updated.save(update_fields=['imagen_perfil_url'])
+                
+                # Construir la respuesta con todos los datos
                 response_data = serializer.data
-                if user_updated.imagen_perfil:
+                if user_updated.imagen_perfil_url:
+                    response_data['imagen_perfil'] = user_updated.imagen_perfil_url
+                elif user_updated.imagen_perfil:
                     response_data['imagen_perfil'] = user_updated.imagen_perfil.url
+                    
                 return Response(response_data, status=status.HTTP_200_OK)
             except Exception as e:
                 print(f"Error al actualizar el perfil: {str(e)}")
@@ -143,12 +154,18 @@ class UploadProfileImageView(APIView):
         # Guardamos la imagen en Cloudinary a través del modelo
         try:
             user.imagen_perfil = imagen
+            # Asegurarse de obtener la URL antes de guardar
             user.save()
+            
+            # Obtener la URL generada y guardarla específicamente
+            if user.imagen_perfil:
+                user.imagen_perfil_url = user.imagen_perfil.url
+                user.save(update_fields=['imagen_perfil_url'])
             
             # Devolvemos la URL de la imagen subida
             return Response({
                 "detalle": "Imagen de perfil actualizada correctamente.",
-                "imagen_perfil": user.imagen_perfil.url if user.imagen_perfil else None
+                "imagen_perfil": user.imagen_perfil_url or (user.imagen_perfil.url if user.imagen_perfil else None)
             }, status=status.HTTP_200_OK)
         except Exception as e:
             print(f"Error al subir la imagen: {str(e)}")
