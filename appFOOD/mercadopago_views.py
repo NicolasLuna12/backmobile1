@@ -18,21 +18,14 @@ class MercadoPagoBricksConfigView(APIView):
     """
     def get(self, request):
         try:
-            # Obtener la configuración desde settings
-            public_key = "TEST-31a1ec17-44f8-4781-a611-a9ed80afed62"  # Clave pública de prueba de MercadoPago
-            
             return Response({
-                "publicKey": public_key,
+                "publicKey": "TEST-c2dd1a20-683f-4afd-a13c-6ae864b5b80d",  # Esta es una public key de prueba, deberías configurar la tuya en settings
                 "site_url": "https://ispcfood.netlify.app",
                 "success_url": "https://ispcfood.netlify.app/success",
                 "failure_url": "https://ispcfood.netlify.app/failure",
                 "pending_url": "https://ispcfood.netlify.app/pending",
                 "api_base_url": "https://backmobile1.onrender.com/api/producto",
-                "process_payment_url": "/mercadopago/process-payment/",
-                "merchant_id": "146918484",  # Tu merchant ID de MercadoPago
-                "preference_id": "",  # Se llena dinámicamente cuando se crea una preferencia
-                "access_token": ACCESS_TOKEN.split("-")[1] if ACCESS_TOKEN else "",  # No enviar el token completo, solo usar para depuración
-                "mode": "test" if ACCESS_TOKEN and ACCESS_TOKEN.startswith("TEST-") else "prod"
+                "process_payment_url": "/mercadopago/process-payment/"
             }, status=status.HTTP_200_OK)
         except Exception as e:
             logging.exception("Error al obtener configuración de Bricks")
@@ -89,15 +82,6 @@ class MercadoPagoProcessPaymentView(APIView):
         if not payment_data:
             return Response({"error": "Debes proporcionar los datos del pago."}, status=400)
         
-        # Registrar la solicitud para depuración
-        logging.info(f"Payment data received: {json.dumps(payment_data, indent=2)}")
-        
-        # Verificar si los datos vienen en formato Brick o en formato directo
-        if 'formData' in payment_data:
-            # Es formato Brick
-            formData = payment_data.get('formData', {})
-            payment_data = formData
-        
         # Validaciones específicas para Process Payment API
         if 'transaction_amount' not in payment_data or 'token' not in payment_data:
             return Response({"error": "Se requieren los campos 'transaction_amount' y 'token'."}, status=400)
@@ -109,17 +93,9 @@ class MercadoPagoProcessPaymentView(APIView):
         if 'payment_method_id' not in payment_data:
             return Response({"error": "Se requiere el campo 'payment_method_id'."}, status=400)
             
-        # Obtener el email del pagador (puede estar en diferentes lugares según formato)
-        email = None
-        if 'email' in payment_data:
-            email = payment_data['email']
-        elif 'payer' in payment_data and 'email' in payment_data['payer']:
-            email = payment_data['payer']['email']
-            
-        if not email:
-            return Response({"error": "Se requiere el email del pagador."}, status=400)
-              
-        # Formatear los datos según la API de proceso de pago
+        if 'email' not in payment_data:
+            return Response({"error": "Se requiere el campo 'email'."}, status=400)
+              # Formatear los datos según la API de proceso de pago
         formatted_payment_data = {
             "transaction_amount": float(payment_data['transaction_amount']),
             "token": payment_data['token'],
@@ -127,7 +103,7 @@ class MercadoPagoProcessPaymentView(APIView):
             "installments": int(payment_data['installments']),
             "payment_method_id": payment_data['payment_method_id'],
             "payer": {
-                "email": email,
+                "email": payment_data['email'],
                 "entity_type": payment_data.get('entity_type', 'individual')  # Aseguramos que tenga un valor válido
             }
         }
