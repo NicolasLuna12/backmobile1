@@ -40,7 +40,11 @@ class CreateTokenView(APIView):
             'apellido': user.apellido,
             'telefono': user.telefono,
             'admin': user.is_superuser,
+
             'imagen_perfil': user.imagen_perfil.url if user.imagen_perfil else None
+
+            'imagen_perfil_url': user.imagen_perfil_url
+
         }, status=status.HTTP_200_OK)
 
 class LogoutView(APIView):
@@ -86,6 +90,7 @@ class DeleteProfileView(APIView):
             return Response({"detalle": "Perfil eliminado satisfactoriamente."}, status=status.HTTP_200_OK)
 
         user.delete()
+
         return Response({"detalle": "Perfil y carrito eliminados satisfactoriamente."}, status=status.HTTP_200_OK)
 
 class UpdateProfileImageView(APIView):
@@ -120,3 +125,6 @@ class UpdateProfileImageView(APIView):
             }, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"detalle": "Perfil y carrito eliminados satisfactoriamente."}, status=status.HTTP_200_OK)
+

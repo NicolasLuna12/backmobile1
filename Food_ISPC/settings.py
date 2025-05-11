@@ -57,8 +57,6 @@ INSTALLED_APPS = [
     'appUSERS.apps.AppusersConfig',
     'appFOOD.apps.AppfoodConfig',
     'appCART.apps.AppcartConfig',
-    'cloudinary',
-    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
@@ -171,6 +169,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=36500),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=36500),
 }
+
 
 # --- MercadoPago Access Token ---
 MERCADOPAGO_ACCESS_TOKEN = "APP_USR-1638397842548868-051022-6da127c22d6d3b0e023d8ae29f3618c2-2435347984"

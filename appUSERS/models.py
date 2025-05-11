@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser,
                                         PermissionsMixin,
                                         BaseUserManager)
-from cloudinary.models import CloudinaryField
 
 
 # Create your models here.
@@ -37,9 +36,9 @@ class Usuario(AbstractBaseUser,PermissionsMixin):
     apellido = models.CharField(max_length=45)
     telefono = models.CharField(max_length=13)
     password = models.CharField(max_length=128)
+    imagen_perfil_url = models.URLField(max_length=255, blank=True, null=True)
     is_staff = models.BooleanField(default=False)  
     is_active = models.BooleanField(default=True)
-    imagen_perfil = CloudinaryField('imagen_perfil', blank=True, null=True)
 
     class Meta:
         managed = True
