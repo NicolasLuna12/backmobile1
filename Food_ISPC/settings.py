@@ -36,7 +36,10 @@ ALLOWED_HOSTS = ['backmobile1.onrender.com']
 CORS_ALLOWED_ORIGINS = [
     "https://example.com",
     "http://localhost:4200",
-    "https://ispcfood.netlify.app"
+    "https://ispcfood.netlify.app",
+    "https://www.mercadopago.com",
+    "https://www.mercadopago.com.ar",
+    "https://api.mercadopago.com"
 ]
 
 # CORS additional settings
@@ -59,7 +62,12 @@ CORS_ALLOW_HEADERS = [
     "user-agent",
     "x-csrftoken",
     "x-requested-with",
+    "x-client-id",
+    "x-product-id"
 ]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-Requested-With']
 
 # --- MercadoPago Access Token ---
 MERCADOPAGO_ACCESS_TOKEN = "TEST-7552529630821540-051100-8923ae58494d373f3e3e00c335057d3e-146918484"
