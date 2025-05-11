@@ -6,7 +6,7 @@ from rest_framework import status
 from django.conf import settings
 
 # Puedes poner tu access token aquí o en settings.py
-ACCESS_TOKEN = getattr(settings, "MERCADOPAGO_ACCESS_TOKEN", None)
+ACCESS_TOKEN = "TEST-1322376657026626-051018-f027bd9d4ce077b4578cca4640d4c13c-146918484"
 
 class MercadoPagoPreferenceView(APIView):
     def post(self, request):
