@@ -1,4 +1,4 @@
-from rest_framework import generics,authentication, permissions,status
+from rest_framework import generics, authentication, permissions, status
 from appCART.models import Carrito, Pedido
 from appUSERS.serializers import UsuarioSerializer, AuthTokenSerializer 
 from rest_framework.views import APIView
@@ -15,7 +15,6 @@ class RetrieveUpdateUsuarioView(generics.RetrieveUpdateAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     
-
     def get_object(self):
         return self.request.user
 
@@ -31,7 +30,7 @@ class CreateTokenView(APIView):
         
         refresh = RefreshToken.for_user(user)
         access_token = refresh.access_token
-
+        
         return Response({
             'email': user.email,
             'user_id': user.pk, 
@@ -40,7 +39,8 @@ class CreateTokenView(APIView):
             'nombre': user.nombre, 
             'apellido': user.apellido,
             'telefono': user.telefono,
-            'admin': user.is_superuser
+            'admin': user.is_superuser,
+            'imagen_perfil': user.imagen_perfil.url if user.imagen_perfil else None
         }, status=status.HTTP_200_OK)
 
 class LogoutView(APIView):
@@ -86,4 +86,37 @@ class DeleteProfileView(APIView):
             return Response({"detalle": "Perfil eliminado satisfactoriamente."}, status=status.HTTP_200_OK)
 
         user.delete()
-        return Response({"detalle": "Perfil y carrito eliminados satisfactoriamente."}, status=status.HTTP_200_OK)       
+        return Response({"detalle": "Perfil y carrito eliminados satisfactoriamente."}, status=status.HTTP_200_OK)
+
+class UpdateProfileImageView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        
+        # Verificar si se proporcionó una imagen
+        if 'imagen_perfil' not in request.FILES:
+            return Response({"error": "No se proporcionó ninguna imagen"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Actualizar solo el campo de imagen
+        serializer = UsuarioSerializer(user, data={'imagen_perfil': request.FILES['imagen_perfil']}, partial=True)
+        
+        if serializer.is_valid():
+            # Primero eliminamos la imagen anterior si existe
+            if user.imagen_perfil:
+                try:
+                    # Cloudinary maneja automáticamente la eliminación cuando se reemplaza
+                    pass
+                except Exception as e:
+                    pass
+            
+            # Guardamos la nueva imagen
+            serializer.save()
+            
+            # Devolvemos los datos actualizados incluida la URL de la imagen
+            return Response({
+                'mensaje': 'Imagen de perfil actualizada correctamente',
+                'imagen_perfil': user.imagen_perfil.url if user.imagen_perfil else None
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

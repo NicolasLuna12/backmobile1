@@ -36,7 +36,10 @@ ALLOWED_HOSTS = ['backmobile1.onrender.com']
 CORS_ALLOWED_ORIGINS = [
     "https://example.com",
     "http://localhost:4200",
-    "https://ispcfood.netlify.app"
+    "https://ispcfood.netlify.app",
+    "https://www.mercadopago.com",
+    "https://www.mercadopago.com.ar",
+    "https://api.mercadopago.com"
 ]
 
 # Application definition
@@ -168,6 +171,9 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=36500),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=36500),
 }
+
+# --- MercadoPago Access Token ---
+MERCADOPAGO_ACCESS_TOKEN = "APP_USR-1638397842548868-051022-6da127c22d6d3b0e023d8ae29f3618c2-2435347984"
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
