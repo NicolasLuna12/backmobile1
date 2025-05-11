@@ -39,28 +39,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://ispcfood.netlify.app"
 ]
 
-# CORS additional settings
-CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
-
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-]
-
 # --- MercadoPago Access Token ---
 MERCADOPAGO_ACCESS_TOKEN = "TEST-7552529630821540-051100-8923ae58494d373f3e3e00c335057d3e-146918484"
 

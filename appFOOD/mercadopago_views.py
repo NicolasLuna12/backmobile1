@@ -12,25 +12,6 @@ from rest_framework.decorators import api_view
 
 ACCESS_TOKEN = getattr(settings, "MERCADOPAGO_ACCESS_TOKEN", None)
 
-class MercadoPagoBricksConfigView(APIView):
-    """
-    Vista para obtener la configuración necesaria para inicializar Mercado Pago Bricks en el frontend
-    """
-    def get(self, request):
-        try:
-            return Response({
-                "publicKey": "TEST-c2dd1a20-683f-4afd-a13c-6ae864b5b80d",  # Esta es una public key de prueba, deberías configurar la tuya en settings
-                "site_url": "https://ispcfood.netlify.app",
-                "success_url": "https://ispcfood.netlify.app/success",
-                "failure_url": "https://ispcfood.netlify.app/failure",
-                "pending_url": "https://ispcfood.netlify.app/pending",
-                "api_base_url": "https://backmobile1.onrender.com/api/producto",
-                "process_payment_url": "/mercadopago/process-payment/"
-            }, status=status.HTTP_200_OK)
-        except Exception as e:
-            logging.exception("Error al obtener configuración de Bricks")
-            return Response({"error": str(e)}, status=500)
-
 class MercadoPagoPaymentView(APIView):
     def post(self, request):
         mp = mercadopago.SDK(ACCESS_TOKEN)
@@ -95,7 +76,8 @@ class MercadoPagoProcessPaymentView(APIView):
             
         if 'email' not in payment_data:
             return Response({"error": "Se requiere el campo 'email'."}, status=400)
-              # Formatear los datos según la API de proceso de pago
+            
+        # Formatear los datos según la API de proceso de pago
         formatted_payment_data = {
             "transaction_amount": float(payment_data['transaction_amount']),
             "token": payment_data['token'],
@@ -103,8 +85,7 @@ class MercadoPagoProcessPaymentView(APIView):
             "installments": int(payment_data['installments']),
             "payment_method_id": payment_data['payment_method_id'],
             "payer": {
-                "email": payment_data['email'],
-                "entity_type": payment_data.get('entity_type', 'individual')  # Aseguramos que tenga un valor válido
+                "email": payment_data['email']
             }
         }
         
