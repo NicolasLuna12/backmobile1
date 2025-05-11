@@ -14,10 +14,6 @@ class MercadoPagoPreferenceView(APIView):
         items = request.data.get("items", [])
         if not items or not isinstance(items, list):
             return Response({"error": "Debes enviar al menos un item válido."}, status=400)
-        # Validación extra de los campos requeridos por MercadoPago
-        for item in items:
-            if not all(k in item for k in ("title", "quantity", "currency_id", "unit_price")):
-                return Response({"error": "Cada item debe tener title, quantity, currency_id y unit_price."}, status=400)
         preference_data = {
             "items": items
         }
