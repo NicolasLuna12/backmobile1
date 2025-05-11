@@ -1,25 +1,146 @@
 import mercadopago
 import logging
+import json
+import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
 
-# Puedes poner tu access token aquí o en settings.py
+
 ACCESS_TOKEN = getattr(settings, "MERCADOPAGO_ACCESS_TOKEN", None)
+
+class MercadoPagoPaymentView(APIView):
+    def post(self, request):
+        mp = mercadopago.SDK(ACCESS_TOKEN)
+        
+        # Obtener datos del pago
+        payment_data = request.data.get("payment_data", {})
+        if not payment_data:
+            return Response({"error": "Debes proporcionar los datos del pago."}, status=400)
+            
+        # Validar campos requeridos
+        required_fields = ["transaction_amount", "token", "description", "installments", 
+                           "payment_method_id", "payer"]
+        
+        for field in required_fields:
+            if field not in payment_data:
+                return Response({"error": f"El campo '{field}' es requerido."}, status=400)
+                
+        # Asegurarse de que el pagador tenga email
+        if "email" not in payment_data.get("payer", {}):
+            return Response({"error": "El email del pagador es requerido."}, status=400)
+            
+        try:
+            # Crear el pago utilizando la API de Pagos
+            payment_response = mp.payment().create(payment_data)
+            
+            if payment_response["status"] == 201 or payment_response["status"] == 200:
+                return Response({
+                    "status": payment_response["response"]["status"],
+                    "status_detail": payment_response["response"]["status_detail"],
+                    "id": payment_response["response"]["id"]
+                }, status=status.HTTP_201_CREATED)
+            else:
+                logging.error(f"MercadoPago error: {payment_response}")
+                return Response({
+                    "error": "No se pudo procesar el pago.",
+                    "detalle": payment_response
+                }, status=500)
+        except Exception as e:
+            logging.exception("Error inesperado al procesar pago con MercadoPago")
+            return Response({"error": str(e)}, status=500)
+            
+            
+class MercadoPagoProcessPaymentView(APIView):
+    def post(self, request):
+        mp = mercadopago.SDK(ACCESS_TOKEN)
+        
+        # Obtener datos del pago
+        payment_data = request.data
+        if not payment_data:
+            return Response({"error": "Debes proporcionar los datos del pago."}, status=400)
+        
+        # Validaciones específicas para Process Payment API
+        if 'transaction_amount' not in payment_data or 'token' not in payment_data:
+            return Response({"error": "Se requieren los campos 'transaction_amount' y 'token'."}, status=400)
+            
+        # Valores por defecto si no están presentes
+        if 'installments' not in payment_data:
+            payment_data['installments'] = 1
+            
+        if 'payment_method_id' not in payment_data:
+            return Response({"error": "Se requiere el campo 'payment_method_id'."}, status=400)
+            
+        if 'email' not in payment_data:
+            return Response({"error": "Se requiere el campo 'email'."}, status=400)
+            
+        # Formatear los datos según la API de proceso de pago
+        formatted_payment_data = {
+            "transaction_amount": float(payment_data['transaction_amount']),
+            "token": payment_data['token'],
+            "description": payment_data.get('description', 'Compra en ISPC Food'),
+            "installments": int(payment_data['installments']),
+            "payment_method_id": payment_data['payment_method_id'],
+            "payer": {
+                "email": payment_data['email']
+            }
+        }
+        
+        # Agregar datos adicionales si están presentes
+        if 'issuer_id' in payment_data:
+            formatted_payment_data['issuer_id'] = payment_data['issuer_id']
+            
+        if 'identification' in payment_data:
+            formatted_payment_data['payer']['identification'] = payment_data['identification']
+        
+        try:
+            # Crear el pago utilizando la API de Pagos
+            payment_response = mp.payment().create(formatted_payment_data)
+            
+            if payment_response["status"] == 201 or payment_response["status"] == 200:
+                logging.info(f"Pago procesado: ID {payment_response['response']['id']}")
+                return Response({
+                    "status": payment_response["response"]["status"],
+                    "status_detail": payment_response["response"]["status_detail"],
+                    "id": payment_response["response"]["id"],
+                    "payment_method_id": payment_response["response"]["payment_method_id"],
+                    "payment_type_id": payment_response["response"]["payment_type_id"],
+                    "transaction_amount": payment_response["response"]["transaction_amount"],
+                    "date_created": payment_response["response"]["date_created"],
+                    "message": "Pago procesado correctamente"
+                }, status=status.HTTP_201_CREATED)
+            else:
+                logging.error(f"MercadoPago error: {payment_response}")
+                return Response({
+                    "error": "No se pudo procesar el pago.",
+                    "detalle": payment_response["response"] if "response" in payment_response else payment_response
+                }, status=500)
+        except Exception as e:
+            logging.exception("Error inesperado al procesar pago con MercadoPago")
+            return Response({"error": str(e)}, status=500)
+
 
 class MercadoPagoPreferenceView(APIView):
     def post(self, request):
         mp = mercadopago.SDK(ACCESS_TOKEN)
         items = request.data.get("items", [])
         if not items or not isinstance(items, list):
-            return Response({"error": "Debes enviar al menos un item válido."}, status=400)
-        # Validación extra de los campos requeridos por MercadoPago
+            return Response({"error": "Debes enviar al menos un item válido."}, status=400)        # Validación extra de los campos requeridos por MercadoPago
         for item in items:
             if not all(k in item for k in ("title", "quantity", "currency_id", "unit_price")):
                 return Response({"error": "Cada item debe tener title, quantity, currency_id y unit_price."}, status=400)
+                
         preference_data = {
-            "items": items
+            "items": items,
+            "back_urls": {
+                "success": "https://ispcfood.netlify.app/success",
+                "failure": "https://ispcfood.netlify.app/failure",
+                "pending": "https://ispcfood.netlify.app/pending"
+            },
+            "auto_return": "approved"
         }
         try:
             preference_response = mp.preference().create(preference_data)
