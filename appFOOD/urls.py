@@ -1,7 +1,12 @@
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 from .views import ProductoViewSet
-from .mercadopago_views import MercadoPagoPreferenceView, MercadoPagoPaymentView, MercadoPagoProcessPaymentView
+from .mercadopago_views import (
+    MercadoPagoPreferenceView, 
+    MercadoPagoPaymentView, 
+    MercadoPagoProcessPaymentView,
+    MercadoPagoBricksConfigView
+)
 
 router = DefaultRouter()
 router.register('', ProductoViewSet )
@@ -15,4 +20,5 @@ urlpatterns = [
     path('mercadopago/preference/', MercadoPagoPreferenceView.as_view(), name='mercadopago-preference'),
     path('mercadopago/payment/', MercadoPagoPaymentView.as_view(), name='mercadopago-payment'),
     path('mercadopago/process-payment/', MercadoPagoProcessPaymentView.as_view(), name='mercadopago-process-payment'),
+    path('mercadopago/bricks-config/', MercadoPagoBricksConfigView.as_view(), name='mercadopago-bricks-config'),
 ]
