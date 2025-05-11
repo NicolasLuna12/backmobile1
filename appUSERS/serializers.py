@@ -9,7 +9,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
         fields = ['email','password','nombre','apellido','telefono','imagen_perfil_url']
 
-        fields = ['email', 'password', 'nombre', 'apellido', 'telefono', 'imagen_perfil']
+        
 
         extra_kwargs = {'password': {'write_only': True}}
 
