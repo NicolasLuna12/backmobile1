@@ -3,8 +3,8 @@ Django>=4.2
 mysqlclient
 mercadopago
 cloudinary
-cloudinary-storage
+django-cloudinary-storage
 djangorestframework
 Pillow
 djangorestframework-simplejwt
-corsheaders
+django-cors-headers
