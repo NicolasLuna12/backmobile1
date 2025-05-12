@@ -58,47 +58,21 @@ Este repositorio contiene el backend para la aplicación Food ISPC, un sistema d
 
 ## Integración con Mercado Pago
 
-El proyecto incluye integración con la Checkout API de Mercado Pago para procesar pagos en línea.
+El proyecto incluye un sistema de procesamiento de pagos.
 
 ### Configuración
 
-1. Obten tus credenciales de Mercado Pago desde el [Portal de Desarrolladores](https://developers.mercadopago.com)
-
-2. Configura las siguientes variables en tu archivo `.env`:
+1. Configura las siguientes variables en tu archivo `.env`:
    ```
-   MERCADO_PAGO_ACCESS_TOKEN=YOUR_ACCESS_TOKEN
-   MERCADO_PAGO_PUBLIC_KEY=YOUR_PUBLIC_KEY
-   MERCADO_PAGO_SUCCESS_URL=http://localhost:4200/payment/success
-   MERCADO_PAGO_FAILURE_URL=http://localhost:4200/payment/failure
-   MERCADO_PAGO_PENDING_URL=http://localhost:4200/payment/pending
-   MERCADO_PAGO_NOTIFICATION_URL=http://localhost:8000/api/payment/webhook/
+   # Variables de configuración aquí
    ```
-
-3. Para entornos de desarrollo, puedes usar [ngrok](https://ngrok.com/) para exponer temporalmente tu servidor local y recibir webhooks:
-   ```
-   ngrok http 8000
-   ```
-   
-   Actualiza la `MERCADO_PAGO_NOTIFICATION_URL` con la URL proporcionada por ngrok.
 
 ### Endpoints de la API de Pagos
-
-- **POST /api/cart/checkout/mercadopago/**: Crea una preferencia de pago para un pedido
-  - Body: `{ "pedido_id": 123 }`
-  - Respuesta: Información necesaria para iniciar el checkout
-
-- **POST /api/cart/webhook/mercadopago/**: Webhook para recibir notificaciones de Mercado Pago
-  - Esta ruta es llamada automáticamente por Mercado Pago
 
 - **GET /api/cart/payment/status/{pago_id}/**: Consulta el estado de un pago
   - Respuesta: Información detallada del pago
 
 ### Documentación
-
-Para más detalles sobre la integración con Mercado Pago, consulta los siguientes archivos:
-
-- [Guía de Integración Frontend](docs/integracion_mercadopago.md)
-- [Tarjetas de Prueba](docs/tarjetas_prueba_mercadopago.md)
 
 ## Estructura del Proyecto
 

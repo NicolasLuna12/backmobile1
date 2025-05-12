@@ -218,10 +218,5 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': "CILwUfSuiDsJ977SrrCvPQcgJz4",       # Reemplaza por tu API secret real
 }
 
-# Configuración de Mercado Pago
-MERCADO_PAGO_ACCESS_TOKEN = 'TEST-4315726902949393-051118-25e3ffec651ee729ca9cd53caef0f567-146918484'
-MERCADO_PAGO_PUBLIC_KEY = 'APP_USR-6da65cd4-3d39-4c20-8c53-a8a7873f3c0a'  # Reemplaza con tu Public Key real
-MERCADO_PAGO_SUCCESS_URL = os.getenv('MERCADO_PAGO_SUCCESS_URL', 'http://localhost:4200/payment/success')
-MERCADO_PAGO_FAILURE_URL = os.getenv('MERCADO_PAGO_FAILURE_URL', 'http://localhost:4200/payment/failure')
-MERCADO_PAGO_PENDING_URL = os.getenv('MERCADO_PAGO_PENDING_URL', 'http://localhost:4200/payment/pending')
-MERCADO_PAGO_NOTIFICATION_URL = os.getenv('MERCADO_PAGO_NOTIFICATION_URL', 'http://localhost:8000/api/payment/webhook/')
+# Configuración de Pagos
+# Aquí puede ir la configuración de otro sistema de pagos en el futuro
