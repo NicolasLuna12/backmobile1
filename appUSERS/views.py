@@ -30,7 +30,6 @@ class CreateTokenView(APIView):
         
         refresh = RefreshToken.for_user(user)
         access_token = refresh.access_token
-        
         return Response({
             'email': user.email,
             'user_id': user.pk, 
@@ -40,11 +39,7 @@ class CreateTokenView(APIView):
             'apellido': user.apellido,
             'telefono': user.telefono,
             'admin': user.is_superuser,
-
-            'imagen_perfil': user.imagen_perfil.url if user.imagen_perfil else None
-
             'imagen_perfil_url': user.imagen_perfil_url
-
         }, status=status.HTTP_200_OK)
 
 class LogoutView(APIView):
@@ -93,38 +88,28 @@ class DeleteProfileView(APIView):
 
         return Response({"detalle": "Perfil y carrito eliminados satisfactoriamente."}, status=status.HTTP_200_OK)
 
+        return Response({"detalle": "Perfil y carrito eliminados satisfactoriamente."}, status=status.HTTP_200_OK)
+
 class UpdateProfileImageView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         user = request.user
         
-        # Verificar si se proporcionó una imagen
-        if 'imagen_perfil' not in request.FILES:
-            return Response({"error": "No se proporcionó ninguna imagen"}, status=status.HTTP_400_BAD_REQUEST)
+        # Verificar si se proporcionó una URL de imagen
+        if 'imagen_perfil_url' not in request.data:
+            return Response({"error": "No se proporcionó ninguna URL de imagen"}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Actualizar solo el campo de imagen
-        serializer = UsuarioSerializer(user, data={'imagen_perfil': request.FILES['imagen_perfil']}, partial=True)
+        # Actualizar solo el campo de imagen_perfil_url
+        serializer = UsuarioSerializer(user, data={'imagen_perfil_url': request.data['imagen_perfil_url']}, partial=True)
         
         if serializer.is_valid():
-            # Primero eliminamos la imagen anterior si existe
-            if user.imagen_perfil:
-                try:
-                    # Cloudinary maneja automáticamente la eliminación cuando se reemplaza
-                    pass
-                except Exception as e:
-                    pass
-            
-            # Guardamos la nueva imagen
             serializer.save()
             
             # Devolvemos los datos actualizados incluida la URL de la imagen
             return Response({
-                'mensaje': 'Imagen de perfil actualizada correctamente',
-                'imagen_perfil': user.imagen_perfil.url if user.imagen_perfil else None
+                'mensaje': 'URL de imagen de perfil actualizada correctamente',
+                'imagen_perfil_url': user.imagen_perfil_url
             }, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"detalle": "Perfil y carrito eliminados satisfactoriamente."}, status=status.HTTP_200_OK)
-

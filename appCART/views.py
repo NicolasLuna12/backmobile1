@@ -8,6 +8,9 @@ from .serializers import DetallePedidoSerializer, ModificarCantidadSerializer
 from asgiref.sync import sync_to_async
 from appUSERS.models import Usuario
 from rest_framework import status
+from asgiref.sync import sync_to_async
+from appUSERS.models import Usuario
+from rest_framework import status
 
 class AgregarProductoAlCarrito(APIView):
     permission_classes = [IsAuthenticated]
@@ -82,13 +85,15 @@ class ConfirmarPedido(APIView):
             id_usuario = usuario.id_usuario
 
             detalles_carrito = Carrito.objects.filter(usuario_id=id_usuario)
-            pedido  = Pedido.objects.get(id_usuario_id=id_usuario, estado="Pendiente")
-            # if not detalles_carrito.exists():
-            #     return Response({'error': 'El carrito está vacío'}, status=400)   
+            pedido = Pedido.objects.get(id_usuario_id=id_usuario, estado="Pendiente")
+            
+            if not detalles_carrito.exists():
+                return Response({'error': 'El carrito está vacío'}, status=400)
 
             detalles_carrito.delete()
-            pedido.estado = "Aprobado por Chayanne"
+            pedido.estado = "Aprobado"
             pedido.save()
+            
             return Response({'message': 'Pedido confirmado'})
         except Carrito.DoesNotExist:
             return Response({"error": "El carrito está vacio."}, status=status.HTTP_404_NOT_FOUND)
@@ -168,3 +173,45 @@ class ModificarCantidadProductoCarrito(APIView):
                 return Response({"error": "No existe un detalle de pedido para este producto en el carrito."}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class VerDetallePedido(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, pedido_id):
+        try:
+            usuario = request.user
+            pedido = Pedido.objects.prefetch_related('detalles').get(
+                id_pedidos=pedido_id, id_usuario=usuario.id_usuario
+            )
+            
+            # Obtener los detalles del pedido
+            detalles = DetallePedido.objects.filter(id_pedido=pedido)
+            
+            # Calcular monto total
+            monto_total = sum(detalle.subtotal for detalle in detalles)
+            
+            # Crear respuesta con información completa
+            respuesta = {
+                'pedido': {
+                    'id_pedidos': pedido.id_pedidos,
+                    'fecha_pedido': pedido.fecha_pedido,
+                    'hora_pedido': pedido.hora_pedido,
+                    'direccion_entrega': pedido.direccion_entrega,
+                    'estado': pedido.estado,
+                    'monto_total': monto_total
+                },
+                'detalles': [
+                    {
+                        'producto': detalle.id_producto.nombre_producto,
+                        'cantidad': detalle.cantidad_productos,
+                        'precio_unitario': detalle.precio_producto,
+                        'subtotal': detalle.subtotal,
+                        'imagen': detalle.id_producto.imageURL if hasattr(detalle.id_producto, 'imageURL') else None
+                    } for detalle in detalles
+                ]
+            }
+            
+            return Response(respuesta)
+        except Pedido.DoesNotExist:
+            return Response({"error": "Pedido no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+

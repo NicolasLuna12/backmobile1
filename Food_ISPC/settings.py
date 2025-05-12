@@ -30,17 +30,55 @@ SECRET_KEY = 'django-insecure-lq50bruj9vl$-l1#drn=*iof2z%f%nl!j05(ce#*s$e2xhixc=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['backmobile1.onrender.com']
+ALLOWED_HOSTS = ['backmobile1.onrender.com', 'localhost', '127.0.0.1']
 
 # CORS allowed 
 CORS_ALLOWED_ORIGINS = [
     "https://example.com",
     "http://localhost:4200",
-    "https://ispcfood.netlify.app",
-    "https://www.mercadopago.com",
-    "https://www.mercadopago.com.ar",
-    "https://api.mercadopago.com"
+    "https://ispcfood.netlify.app"
 ]
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'appCART': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
 
 # Application definition
 
@@ -170,9 +208,6 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=36500),
 }
 
-
-# --- MercadoPago Access Token ---
-MERCADOPAGO_ACCESS_TOKEN = "APP_USR-1638397842548868-051022-6da127c22d6d3b0e023d8ae29f3618c2-2435347984"
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
