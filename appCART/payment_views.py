@@ -19,7 +19,7 @@ class CrearPreferenciaPago(APIView):
         try:
             # Obtener el pedido pendiente del usuario
             pedido = Pedido.objects.get(id_usuario=request.user.id_usuario, estado="Pendiente")
-            detalles = DetallePedido.objects.filter(id_pedido=pedido).select_related('id_producto')
+            detalles = DetallePedido.objects.filter(id_pedido=pedido)
             
             if not detalles.exists():
                 return Response({"error": "El pedido está vacío"}, status=status.HTTP_400_BAD_REQUEST)
@@ -30,13 +30,18 @@ class CrearPreferenciaPago(APIView):
             # Crear los items para la preferencia de MP
             items = []
             for detalle in detalles:
-                items.append({
-                    "title": detalle.id_producto.nombre_producto,
-                    "quantity": detalle.cantidad_productos,
-                    "currency_id": "ARS",  # Moneda Argentina
-                    "unit_price": float(detalle.precio_producto),
-                    "picture_url": detalle.id_producto.imageURL if hasattr(detalle.id_producto, 'imageURL') else ""
-                })
+                producto = detalle.id_producto
+                if producto:
+                    items.append({
+                        "title": producto.nombre_producto,
+                        "quantity": int(detalle.cantidad_productos or 1),
+                        "currency_id": "ARS",  # Moneda Argentina
+                        "unit_price": float(detalle.precio_producto)
+                    })
+            
+            if not items:
+                return Response({"error": "No se pudieron procesar los productos del pedido"}, 
+                              status=status.HTTP_400_BAD_REQUEST)
             
             # URLs de retorno (ajústalas según tus rutas de frontend)
             success_url = "https://ispcfood.netlify.app/payment/success"
@@ -45,15 +50,11 @@ class CrearPreferenciaPago(APIView):
             
             # Datos del comprador
             payer = {
-                "name": request.user.nombre if hasattr(request.user, 'nombre') else request.user.username,
-                "email": request.user.email,
-                "identification": {
-                    "type": "DNI",
-                    "number": "12345678"  # Esto debería venir del usuario
-                }
+                "name": request.user.nombre,
+                "email": request.user.email
             }
             
-            # Configuración de la preferencia con más detalles
+            # Configuración de la preferencia simplificada
             preference_data = {
                 "items": items,
                 "back_urls": {
@@ -62,20 +63,23 @@ class CrearPreferenciaPago(APIView):
                     "pending": pending_url
                 },
                 "auto_return": "approved",
-                "binary_mode": True,  # Solo acepta pagos aprobados o rechazados
-                "statement_descriptor": "ISPC Food",  # Descripción que aparecerá en el resumen de tarjeta
                 "external_reference": str(pedido.id_pedidos),
-                "payer": payer,
-                "notification_url": request.build_absolute_uri(reverse('webhook_mercado_pago'))
+                "payer": payer
             }
             
-            preference_response = sdk.preference().create(preference_data)
-            
-            if preference_response["status"] != 201 and preference_response["status"] != 200:
-                return Response({"error": "Error al crear preferencia de pago"}, 
+            # Intentar crear la preferencia con manejo de errores
+            try:
+                preference_response = sdk.preference().create(preference_data)
+                if "response" not in preference_response:
+                    raise Exception(f"Error en la respuesta de Mercado Pago: {preference_response}")
+                    
+                preference = preference_response["response"]
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error al crear preferencia de pago: {str(e)}")
+                return Response({"error": f"Error al crear preferencia de pago: {str(e)}"}, 
                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                
-            preference = preference_response["response"]
             
             # Guardar la información del pago
             pago, created = Pago.objects.get_or_create(
@@ -98,6 +102,14 @@ class CrearPreferenciaPago(APIView):
                 "sandbox_init_point": preference.get("sandbox_init_point"),
                 "pedido_id": pedido.id_pedidos
             })
+            
+        except Pedido.DoesNotExist:
+            return Response({"error": "No hay un pedido pendiente"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error general en CrearPreferenciaPago: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
         except Pedido.DoesNotExist:
             return Response({"error": "No hay un pedido pendiente"}, status=status.HTTP_404_NOT_FOUND)
