@@ -39,9 +39,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://ispcfood.netlify.app"
 ]
 
-# Mercado Pago Configuration
-MERCADO_PAGO_ACCESS_TOKEN = "APP_USR-1638397842548868-051022-6da127c22d6d3b0e023d8ae29f3618c2-2435347984"
-
 # Logging configuration
 LOGGING = {
     'version': 1,

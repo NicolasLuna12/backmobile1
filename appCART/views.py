@@ -1,10 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import DetallePedido, Pedido, Carrito, Pago
+from .models import DetallePedido, Pedido, Carrito
 from appFOOD.models import Producto
 from datetime import date, datetime
 from .serializers import DetallePedidoSerializer, ModificarCantidadSerializer
+from asgiref.sync import sync_to_async
+from appUSERS.models import Usuario
+from rest_framework import status
 from asgiref.sync import sync_to_async
 from appUSERS.models import Usuario
 from rest_framework import status
@@ -82,39 +85,16 @@ class ConfirmarPedido(APIView):
             id_usuario = usuario.id_usuario
 
             detalles_carrito = Carrito.objects.filter(usuario_id=id_usuario)
-            pedido  = Pedido.objects.get(id_usuario_id=id_usuario, estado="Pendiente")
-            # if not detalles_carrito.exists():
-            #     return Response({'error': 'El carrito está vacío'}, status=400)   
-
-            # No eliminamos los items del carrito hasta que se procese el pago
-            # detalles_carrito.delete()
+            pedido = Pedido.objects.get(id_usuario_id=id_usuario, estado="Pendiente")
             
-            # Calcular el monto total del pedido
-            monto_total = 0
-            detalles_pedido = DetallePedido.objects.filter(id_pedido=pedido)
-            for detalle in detalles_pedido:
-                monto_total += detalle.subtotal
+            if not detalles_carrito.exists():
+                return Response({'error': 'El carrito está vacío'}, status=400)
 
-            # Creamos un registro de pago pendiente
-            pago, created = Pago.objects.get_or_create(
-                pedido=pedido,
-                defaults={
-                    'monto_total': monto_total,
-                    'estado_pago': 'pendiente'
-                }
-            )
-
-            if not created:
-                pago.monto_total = monto_total
-                pago.save()
-
-            # Devolvemos la información del pedido y del pago para que el frontend pueda redirigir a la página de pago
-            return Response({
-                'message': 'Pedido confirmado',
-                'pedido_id': pedido.id_pedidos,
-                'monto_total': monto_total,
-                'siguiente_paso': 'pago'  # Indicar que el siguiente paso es el pago
-            })
+            detalles_carrito.delete()
+            pedido.estado = "Aprobado"
+            pedido.save()
+            
+            return Response({'message': 'Pedido confirmado'})
         except Carrito.DoesNotExist:
             return Response({"error": "El carrito está vacio."}, status=status.HTTP_404_NOT_FOUND)
         except Pedido.DoesNotExist:
@@ -194,7 +174,7 @@ class ModificarCantidadProductoCarrito(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class VerDetallePedidoConPago(APIView):
+class VerDetallePedido(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request, pedido_id):
@@ -207,20 +187,8 @@ class VerDetallePedidoConPago(APIView):
             # Obtener los detalles del pedido
             detalles = DetallePedido.objects.filter(id_pedido=pedido)
             
-            # Obtener información del pago si existe
-            try:
-                pago = Pago.objects.get(pedido=pedido)
-                pago_info = {
-                    'id_pago': pago.id_pago,
-                    'monto_total': pago.monto_total,
-                    'fecha_pago': pago.fecha_pago,
-                    'estado_pago': pago.estado_pago,
-                    'metodo_pago': pago.metodo_pago,
-                    'preference_id': pago.preference_id,
-                    'payment_id': pago.payment_id
-                }
-            except Pago.DoesNotExist:
-                pago_info = None
+            # Calcular monto total
+            monto_total = sum(detalle.subtotal for detalle in detalles)
             
             # Crear respuesta con información completa
             respuesta = {
@@ -229,7 +197,8 @@ class VerDetallePedidoConPago(APIView):
                     'fecha_pedido': pedido.fecha_pedido,
                     'hora_pedido': pedido.hora_pedido,
                     'direccion_entrega': pedido.direccion_entrega,
-                    'estado': pedido.estado
+                    'estado': pedido.estado,
+                    'monto_total': monto_total
                 },
                 'detalles': [
                     {
@@ -239,8 +208,7 @@ class VerDetallePedidoConPago(APIView):
                         'subtotal': detalle.subtotal,
                         'imagen': detalle.id_producto.imageURL if hasattr(detalle.id_producto, 'imageURL') else None
                     } for detalle in detalles
-                ],
-                'pago': pago_info
+                ]
             }
             
             return Response(respuesta)
