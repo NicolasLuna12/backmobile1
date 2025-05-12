@@ -45,4 +45,24 @@ class DetallePedido(models.Model):
     def __unicode__(self):
         return self.id_detalle
     #def __str__(self):
-    #    return self.id_detalle    
+    #    return self.id_detalle
+
+class Pago(models.Model):
+    id_pago = models.AutoField(primary_key=True)
+    pedido = models.OneToOneField(Pedido, on_delete=models.CASCADE, related_name='pago')
+    monto_total = models.DecimalField(max_digits=10, decimal_places=2)
+    fecha_pago = models.DateTimeField(auto_now_add=True)
+    estado_pago = models.CharField(max_length=50, default='pendiente')
+    payment_id = models.CharField(max_length=255, blank=True, null=True)
+    merchant_order_id = models.CharField(max_length=255, blank=True, null=True)
+    preference_id = models.CharField(max_length=255, blank=True, null=True)
+    metodo_pago = models.CharField(max_length=100, blank=True, null=True)
+    
+    class Meta:
+        managed = True
+        db_table = 'pago'
+        verbose_name = 'Pago'
+        verbose_name_plural = 'Pagos'
+        
+    def __str__(self):
+        return f"Pago {self.id_pago} - Pedido {self.pedido.id_pedidos}"
