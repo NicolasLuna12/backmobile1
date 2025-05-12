@@ -53,15 +53,14 @@ class MercadoPagoCheckoutView(APIView):
             
             # Iniciar SDK de MercadoPago
             sdk = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
-            
-            # Preparar ítems para la preferencia
+              # Preparar ítems para la preferencia
             items = []
             for detalle in detalles:
                 item = {
-                    "title": f"{detalle.id_producto.nombre}",
+                    "title": f"{detalle.id_producto.nombre_producto}",
                     "quantity": int(detalle.cantidad_productos),
                     "unit_price": float(detalle.precio_producto),
-                    "currency_id": "ARS"  # Ajustar según el país
+                    "currency_id": "COP"  # Moneda: Pesos Colombianos
                 }
                 items.append(item)
             
@@ -130,15 +129,18 @@ class MercadoPagoWebhookView(APIView):
             # Obtener datos de la notificación
             data = request.data
             topic = request.GET.get('topic', '')
+            id_received = request.GET.get('id', '')
             
-            logger.info(f"Webhook MercadoPago recibido: {topic} - {json.dumps(data)}")
+            logger.info(f"Webhook MercadoPago recibido: Tema:{topic}, ID:{id_received}, Data:{json.dumps(data)}")
             
+            # SDK de Mercado Pago
+            sdk = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
+            
+            # Procesar según el tipo de notificación
             if topic == 'payment':
-                payment_id = request.GET.get('id', '')
-                if payment_id:
-                    # Procesar el pago
-                    sdk = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
-                    payment_info = sdk.payment().get(payment_id)
+                # Notificación de pago
+                if id_received:
+                    payment_info = sdk.payment().get(id_received)
                     
                     if payment_info["status"] == 200:
                         payment_data = payment_info["response"]
@@ -153,7 +155,7 @@ class MercadoPagoWebhookView(APIView):
                             pago, created = MercadoPagoPago.objects.get_or_create(
                                 pedido=pedido,
                                 defaults={
-                                    "payment_id": payment_id,
+                                    "payment_id": id_received,
                                     "status": status_payment,
                                     "monto": Decimal(str(payment_data.get("transaction_amount", 0))),
                                     "datos_pago": json.dumps(payment_data)
@@ -162,7 +164,7 @@ class MercadoPagoWebhookView(APIView):
                             
                             if not created:
                                 # Actualizar pago existente
-                                pago.payment_id = payment_id
+                                pago.payment_id = id_received
                                 pago.status = status_payment
                                 pago.datos_pago = json.dumps(payment_data)
                                 pago.save()
@@ -176,10 +178,28 @@ class MercadoPagoWebhookView(APIView):
                                 pedido.estado = "pago_pendiente"
                             
                             pedido.save()
+                            logger.info(f"Pago {id_received} procesado con éxito: {status_payment}")
                         
                         except Pedido.DoesNotExist:
                             logger.error(f"Pedido no encontrado para external_reference: {external_reference}")
-                    
+            
+            elif topic == 'merchant_order':
+                # Notificación de orden de comercio
+                if id_received:
+                    order_info = sdk.merchant_order().get(id_received)
+                    if order_info["status"] == 200:
+                        order_data = order_info["response"]
+                        external_reference = order_data.get("external_reference")
+                        logger.info(f"Orden de comercio recibida: {id_received}, Ref: {external_reference}")
+                        
+                        # Procesar pagos asociados a la orden
+                        payments = order_data.get("payments", [])
+                        for payment in payments:
+                            payment_id = payment.get("id")
+                            if payment_id:
+                                # Procesar cada pago (similar al código anterior)
+                                logger.info(f"Procesando pago {payment_id} de la orden {id_received}")
+            
             return JsonResponse({"status": "success"})
             
         except Exception as e:
@@ -225,11 +245,47 @@ def payment_status(request, pago_id):
                             pago.pedido.estado = "pago_pendiente"
                         
                         pago.pedido.save()
+                        
+                        logger.info(f"Estado de pago actualizado: {pago_id} -> {pago.status}")
             except Exception as e:
                 logger.error(f"Error al consultar estado de pago a MercadoPago: {str(e)}")
         
+        # Obtener detalles del pedido para incluir en la respuesta
+        detalles = DetallePedido.objects.filter(id_pedido=pago.pedido)
+        detalles_data = []
+        for detalle in detalles:
+            detalles_data.append({
+                "producto": detalle.id_producto.nombre_producto,
+                "cantidad": detalle.cantidad_productos,
+                "precio_unitario": detalle.precio_producto,
+                "subtotal": detalle.subtotal
+            })
+        
+        # Preparar datos de respuesta
         serializer = MercadoPagoPagoSerializer(pago)
-        return Response(serializer.data)
+        response_data = serializer.data
+        
+        # Agregar información adicional
+        response_data['detalles_pedido'] = detalles_data
+        response_data['fecha_pedido'] = pago.pedido.fecha_pedido
+        response_data['estado_pedido'] = pago.pedido.estado
+        
+        # Información de pago interpretada
+        status_labels = {
+            'pending': 'Pendiente',
+            'approved': 'Aprobado',
+            'authorized': 'Autorizado',
+            'in_process': 'En Proceso',
+            'in_mediation': 'En Mediación',
+            'rejected': 'Rechazado',
+            'cancelled': 'Cancelado',
+            'refunded': 'Reembolsado',
+            'charged_back': 'Contracargo'
+        }
+        
+        response_data['estado_pago_texto'] = status_labels.get(pago.status, pago.status)
+        
+        return Response(response_data)
         
     except Exception as e:
         logger.error(f"Error al consultar estado de pago: {str(e)}")

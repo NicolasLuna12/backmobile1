@@ -220,7 +220,7 @@ CLOUDINARY_STORAGE = {
 
 # Configuración de Mercado Pago
 MERCADO_PAGO_ACCESS_TOKEN = 'APP_USR-1638397842548868-051022-6da127c22d6d3b0e023d8ae29f3618c2-2435347984'
-MERCADO_PAGO_PUBLIC_KEY = os.getenv('MERCADO_PAGO_PUBLIC_KEY', '')  # Necesitarás agregar la Public Key también
+MERCADO_PAGO_PUBLIC_KEY = 'APP_USR-6da65cd4-3d39-4c20-8c53-a8a7873f3c0a'  # Reemplaza con tu Public Key real
 MERCADO_PAGO_SUCCESS_URL = os.getenv('MERCADO_PAGO_SUCCESS_URL', 'http://localhost:4200/payment/success')
 MERCADO_PAGO_FAILURE_URL = os.getenv('MERCADO_PAGO_FAILURE_URL', 'http://localhost:4200/payment/failure')
 MERCADO_PAGO_PENDING_URL = os.getenv('MERCADO_PAGO_PENDING_URL', 'http://localhost:4200/payment/pending')
