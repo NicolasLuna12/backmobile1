@@ -11,7 +11,7 @@ urlpatterns = [
     path('modificar_cantidad/<int:carrito_id>/', ModificarCantidadProductoCarrito.as_view(), name='modificar_cantidad_producto_carrito'),
     path('detalle_pedido/<int:pedido_id>/', VerDetallePedido.as_view(), name='detalle_pedido'),
     
-    # Ruta para consultar el estado de pagos
+    # Rutas para la integración con Mercado Pago
     path('payment/status/<int:pago_id>/', payment_status, name='payment-status'),
 ]
 
