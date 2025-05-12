@@ -12,10 +12,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-#from dotenv import load_dotenv
+from dotenv import load_dotenv
 from datetime import timedelta
 
-#load_dotenv()
+# Cargar variables de entorno
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -216,3 +217,11 @@ CLOUDINARY_STORAGE = {
     'API_KEY': "285359299675698",             # Reemplaza por tu API key real
     'API_SECRET': "CILwUfSuiDsJ977SrrCvPQcgJz4",       # Reemplaza por tu API secret real
 }
+
+# Configuración de Mercado Pago
+MERCADO_PAGO_ACCESS_TOKEN = 'APP_USR-1638397842548868-051022-6da127c22d6d3b0e023d8ae29f3618c2-2435347984'
+MERCADO_PAGO_PUBLIC_KEY = os.getenv('MERCADO_PAGO_PUBLIC_KEY', '')  # Necesitarás agregar la Public Key también
+MERCADO_PAGO_SUCCESS_URL = os.getenv('MERCADO_PAGO_SUCCESS_URL', 'http://localhost:4200/payment/success')
+MERCADO_PAGO_FAILURE_URL = os.getenv('MERCADO_PAGO_FAILURE_URL', 'http://localhost:4200/payment/failure')
+MERCADO_PAGO_PENDING_URL = os.getenv('MERCADO_PAGO_PENDING_URL', 'http://localhost:4200/payment/pending')
+MERCADO_PAGO_NOTIFICATION_URL = os.getenv('MERCADO_PAGO_NOTIFICATION_URL', 'http://localhost:8000/api/payment/webhook/')
