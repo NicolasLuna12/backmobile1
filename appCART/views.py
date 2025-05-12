@@ -168,3 +168,4 @@ class ModificarCantidadProductoCarrito(APIView):
                 return Response({"error": "No existe un detalle de pedido para este producto en el carrito."}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
