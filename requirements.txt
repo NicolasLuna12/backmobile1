@@ -1,0 +1,10 @@
+# Requerimientos para MercadoPago y Django REST
+Django>=4.2
+mysqlclient
+mercadopago
+cloudinary
+cloudinary-storage
+djangorestframework
+Pillow
+djangorestframework-simplejwt
+corsheaders
