@@ -12,11 +12,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 from datetime import timedelta
 
-# Cargar variables de entorno
-load_dotenv()
+#load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -217,6 +216,3 @@ CLOUDINARY_STORAGE = {
     'API_KEY': "285359299675698",             # Reemplaza por tu API key real
     'API_SECRET': "CILwUfSuiDsJ977SrrCvPQcgJz4",       # Reemplaza por tu API secret real
 }
-
-# Configuración de Pagos
-# Aquí puede ir la configuración de otro sistema de pagos en el futuro
