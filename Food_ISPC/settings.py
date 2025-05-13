@@ -29,9 +29,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-lq50bruj9vl$-l1#drn=*iof2z%f%nl!j05(ce#*s$e2xhixc='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False  # Cambiar a False en producción
+DEBUG = True
 
-ALLOWED_HOSTS = ['backmobile1.onrender.com', 'localhost', '127.0.0.1', '*']
+ALLOWED_HOSTS = ['backmobile1.onrender.com', 'localhost', '127.0.0.1']
 
 # CORS allowed 
 CORS_ALLOWED_ORIGINS = [
@@ -201,16 +201,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,  # Paginar resultados para evitar cargar demasiados datos a la vez
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/day',
-        'user': '1000/day'
-    }
 }
 
 SIMPLE_JWT = {
@@ -230,26 +220,3 @@ CLOUDINARY_STORAGE = {
 
 # Configuración de Pagos
 # Aquí puede ir la configuración de otro sistema de pagos en el futuro
-
-# Optimizaciones de rendimiento y memoria
-# Reducir el uso de memoria ajustando estos parámetros
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000  # Límite de campos en un formulario
-DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440  # Tamaño máximo de carga (2.5MB)
-
-# Opciones de caché para mejorar rendimiento
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-        'TIMEOUT': 300,  # 5 minutos
-        'OPTIONS': {
-            'MAX_ENTRIES': 1000,
-            'CULL_FREQUENCY': 3,  # Fracción de entradas que se eliminarán cuando se alcance MAX_ENTRIES
-        }
-    }
-}
-
-# Configuración de sesiones
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 86400  # 1 día en segundos
-SESSION_SAVE_EVERY_REQUEST = False
