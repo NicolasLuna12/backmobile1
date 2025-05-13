@@ -5,12 +5,13 @@ from .models import DetallePedido, Pedido, Carrito
 from appFOOD.models import Producto
 from datetime import date, datetime
 from .serializers import DetallePedidoSerializer, ModificarCantidadSerializer
-from asgiref.sync import sync_to_async
 from appUSERS.models import Usuario
 from rest_framework import status
-from asgiref.sync import sync_to_async
-from appUSERS.models import Usuario
-from rest_framework import status
+from django.db.models import Sum, F, Prefetch
+import logging
+
+# Configurar logger para la aplicación
+logger = logging.getLogger('appCART')
 
 class AgregarProductoAlCarrito(APIView):
     permission_classes = [IsAuthenticated]
@@ -61,20 +62,27 @@ class VerCarrito(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        usuario = request.user
-        id_usuario = usuario.id_usuario
+        try:
+            usuario = request.user
+            id_usuario = usuario.id_usuario
 
-        detalles_carrito = Carrito.objects.select_related("id_pedido").all().filter(usuario_id=id_usuario)
-        carrito_data = [
-            {
-                "id": detalle.id,
-                'producto': detalle.producto.nombre_producto,
-                'cantidad': detalle.cantidad,
-                "precio": detalle.producto.precio,
-                "imageURL": detalle.producto.imageURL
-            } for detalle in detalles_carrito]
+            # Optimizar consulta con select_related para producto
+            detalles_carrito = Carrito.objects.select_related("producto", "id_pedido").filter(usuario_id=id_usuario)
+            
+            carrito_data = [
+                {
+                    "id": detalle.id,
+                    'producto': detalle.producto.nombre_producto,
+                    'cantidad': detalle.cantidad,
+                    "precio": detalle.producto.precio,
+                    "imageURL": detalle.producto.imageURL
+                } for detalle in detalles_carrito
+            ]
 
-        return Response(carrito_data)
+            return Response(carrito_data)
+        except Exception as e:
+            logger.error(f"Error en VerCarrito: {str(e)}")
+            return Response({"error": "Error al cargar el carrito"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ConfirmarPedido(APIView):
     permission_classes = [IsAuthenticated]
@@ -124,21 +132,39 @@ class VerDashboard(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        usuario = request.user
-        id_usuario = usuario.id_usuario
-        vistaPedidos = Pedido.objects.prefetch_related('detalles').all().filter(id_usuario_id=id_usuario)
-        print("holo")
+        try:
+            usuario = request.user
+            id_usuario = usuario.id_usuario
+            
+            # Limitar la cantidad de pedidos para evitar sobrecargar la memoria
+            # y usar valores específicos en select_related/prefetch_related
+            vistaPedidos = Pedido.objects.filter(
+                id_usuario_id=id_usuario
+            ).prefetch_related(
+                Prefetch('detalles', queryset=DetallePedido.objects.select_related('id_producto'))
+            ).order_by('-fecha_pedido')[:20]  # Limitar a los 20 pedidos más recientes
+            
+            carrito_data = []
+            for pedido in vistaPedidos:
+                detalles_data = []
+                for detalle in pedido.detalles.all():
+                    detalles_data.append({
+                        'cantidad_productos': detalle.cantidad_productos,
+                        'precio_producto': detalle.precio_producto,
+                        'subtotal': detalle.subtotal
+                    })
+                
+                carrito_data.append({
+                    "fecha_pedido": pedido.fecha_pedido,
+                    "direccion_entrega": pedido.direccion_entrega,
+                    "estado": pedido.estado,
+                    "detalles": detalles_data
+                })
 
-        carrito_data = [
-            {
-                "fecha_pedido": pedido.fecha_pedido,
-                "direccion_entrega": pedido.direccion_entrega,
-                "estado":pedido.estado,
-                "detalles": DetallePedidoSerializer(pedido.detalles.all(), many=True).data
-                } 
-                        for pedido in vistaPedidos]
-
-        return Response( { "results": carrito_data} )
+            return Response({"results": carrito_data})
+        except Exception as e:
+            logger.error(f"Error en VerDashboard: {str(e)}")
+            return Response({"error": "Error al cargar el dashboard"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ModificarCantidadProductoCarrito(APIView):
     permission_classes = [IsAuthenticated]
@@ -180,15 +206,16 @@ class VerDetallePedido(APIView):
     def get(self, request, pedido_id):
         try:
             usuario = request.user
-            pedido = Pedido.objects.prefetch_related('detalles').get(
+            # Optimizar la consulta con select_related para productos
+            pedido = Pedido.objects.select_related('id_usuario').get(
                 id_pedidos=pedido_id, id_usuario=usuario.id_usuario
             )
             
-            # Obtener los detalles del pedido
-            detalles = DetallePedido.objects.filter(id_pedido=pedido)
+            # Obtener los detalles del pedido con productos precargados
+            detalles = DetallePedido.objects.select_related('id_producto').filter(id_pedido=pedido)
             
-            # Calcular monto total
-            monto_total = sum(detalle.subtotal for detalle in detalles)
+            # Calcular monto total de manera más eficiente
+            monto_total = detalles.aggregate(total=Sum('subtotal'))['total'] or 0
             
             # Crear respuesta con información completa
             respuesta = {
@@ -214,4 +241,7 @@ class VerDetallePedido(APIView):
             return Response(respuesta)
         except Pedido.DoesNotExist:
             return Response({"error": "Pedido no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Error en VerDetallePedido: {str(e)}")
+            return Response({"error": "Error al cargar el detalle del pedido"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
