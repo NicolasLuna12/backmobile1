@@ -55,12 +55,6 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
-            'formatter': 'verbose',
-        },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
@@ -69,13 +63,13 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['file', 'console'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
         },
         'appCART': {
-            'handlers': ['file', 'console'],
-            'level': 'DEBUG',
+            'handlers': ['console'],
+            'level': 'INFO',
             'propagate': True,
         },
     },
@@ -217,16 +211,3 @@ CLOUDINARY_STORAGE = {
     'API_KEY': "285359299675698",             # Reemplaza por tu API key real
     'API_SECRET': "CILwUfSuiDsJ977SrrCvPQcgJz4",       # Reemplaza por tu API secret real
 }
-
-<<<<<<< HEAD
-# Configuración de Pagos
-# Aquí puede ir la configuración de otro sistema de pagos en el futuro
-=======
-# Configuración de Mercado Pago
-MERCADO_PAGO_ACCESS_TOKEN = 'APP_USR-1638397842548868-051022-6da127c22d6d3b0e023d8ae29f3618c2-2435347984'
-MERCADO_PAGO_PUBLIC_KEY = 'APP_USR-6da65cd4-3d39-4c20-8c53-a8a7873f3c0a'  # Reemplaza con tu Public Key real
-MERCADO_PAGO_SUCCESS_URL = os.getenv('MERCADO_PAGO_SUCCESS_URL', 'http://localhost:4200/payment/success')
-MERCADO_PAGO_FAILURE_URL = os.getenv('MERCADO_PAGO_FAILURE_URL', 'http://localhost:4200/payment/failure')
-MERCADO_PAGO_PENDING_URL = os.getenv('MERCADO_PAGO_PENDING_URL', 'http://localhost:4200/payment/pending')
-MERCADO_PAGO_NOTIFICATION_URL = os.getenv('MERCADO_PAGO_NOTIFICATION_URL', 'http://localhost:8000/api/payment/webhook/')
->>>>>>> parent of b8dcdda (mp)
