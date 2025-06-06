@@ -259,3 +259,20 @@ class VerDetallePedido(APIView):
         except Pedido.DoesNotExist:
             return Response({"error": "Pedido no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
+class EntregarPedido(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        id_pedidos = request.data.get('id_pedidos')
+        if not id_pedidos:
+            return Response({'error': 'Falta el id del pedido'}, status=400)
+        try:
+            pedido = Pedido.objects.get(id_pedidos=id_pedidos, id_usuario=request.user.id_usuario)
+            if pedido.estado != 'Aprobado':
+                return Response({'error': 'Solo se pueden entregar pedidos aprobados'}, status=400)
+            pedido.estado = 'Entregado'
+            pedido.save()
+            return Response({'message': 'Pedido entregado correctamente'})
+        except Pedido.DoesNotExist:
+            return Response({'error': 'Pedido no encontrado'}, status=404)
+
