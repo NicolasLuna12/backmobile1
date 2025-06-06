@@ -25,24 +25,24 @@ class AgregarProductoAlCarrito(APIView):
         if direccion:
             request.user.direccion = direccion
             request.user.save()
-        
+        # Si no hay dirección en la petición, usar la del perfil
+        if not direccion and hasattr(request.user, 'direccion') and request.user.direccion:
+            direccion = request.user.direccion
+        # Si sigue sin haber dirección, poner 'Sin especificar'
+        if not direccion:
+            direccion = 'Sin especificar'
+
         if cantidad > producto.stock:
             return Response({'error': 'Stock insuficiente'}, status=400)
 
         current_time = datetime.now().time()
         pedido, created  = Pedido.objects.get_or_create(id_usuario_id=id_usuario, estado="Pendiente")
-
-        # Actualizar dirección de entrega si el usuario envía una dirección
-        if direccion:
-            pedido.direccion_entrega = direccion
-            pedido.save()
+        # Actualizar dirección de entrega siempre
+        pedido.direccion_entrega = direccion
+        pedido.save()
 
         if created:
             pedido.hora_pedido = current_time
-            if not direccion and hasattr(request.user, 'direccion') and request.user.direccion:
-                direccion = request.user.direccion
-            if not pedido.direccion_entrega:
-                pedido.direccion_entrega = direccion
             pedido.fecha_pedido = date.today()
             pedido.save()
 
