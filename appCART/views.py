@@ -135,9 +135,10 @@ class VerDashboard(APIView):
 
         carrito_data = [
             {
+                "id_pedidos": pedido.id_pedidos,
                 "fecha_pedido": pedido.fecha_pedido,
                 "direccion_entrega": pedido.direccion_entrega,
-                "estado":pedido.estado,
+                "estado": pedido.estado,
                 "detalles": DetallePedidoSerializer(pedido.detalles.all(), many=True).data
                 } 
                         for pedido in vistaPedidos]
