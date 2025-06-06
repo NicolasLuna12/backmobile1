@@ -56,6 +56,8 @@ class AgregarProductoAlCarrito(APIView):
 
         detallePedido, detalleCreated = DetallePedido.objects.get_or_create( precio_producto=producto.precio, id_pedido_id=pedido.id_pedidos, id_producto_id= producto.id_producto)
 
+        # Guardar la dirección de entrega en el detalle
+        detallePedido.direccion_entrega = direccion
         if detalleCreated:
             detallePedido.cantidad_productos = cantidad
             detallePedido.subtotal = detallePedido.cantidad_productos * detallePedido.precio_producto

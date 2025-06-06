@@ -9,7 +9,7 @@ class CarritoSerializer(serializers.ModelSerializer):
 class DetallePedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = DetallePedido
-        fields = ["cantidad_productos", "precio_producto", "subtotal"]
+        fields = ["cantidad_productos", "precio_producto", "subtotal", "direccion_entrega"]
 
 class ModificarCantidadSerializer(serializers.Serializer):
     cantidad = serializers.IntegerField(min_value=1)
