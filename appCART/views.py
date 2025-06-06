@@ -61,10 +61,9 @@ class AgregarProductoAlCarrito(APIView):
             carrito.cantidad += cantidad
             carrito.save()
 
-        detallePedido, detalleCreated = DetallePedido.objects.get_or_create( precio_producto=producto.precio, id_pedido_id=pedido.id_pedidos, id_producto_id= producto.id_producto)
+        detallePedido, detalleCreated = DetallePedido.objects.get_or_create(
+            precio_producto=producto.precio, id_pedido_id=pedido.id_pedidos, id_producto_id=producto.id_producto)
 
-        # Siempre sincronizar la dirección de entrega del detalle con la del pedido
-        detallePedido.direccion_entrega = pedido.direccion_entrega
         if detalleCreated:
             detallePedido.cantidad_productos = cantidad
             detallePedido.subtotal = detallePedido.cantidad_productos * detallePedido.precio_producto
@@ -73,6 +72,9 @@ class AgregarProductoAlCarrito(APIView):
             detallePedido.cantidad_productos += cantidad
             detallePedido.subtotal = detallePedido.cantidad_productos * detallePedido.precio_producto
             detallePedido.save()
+
+        # Ahora sí, actualizar la dirección en todos los detalles del pedido (incluido el nuevo)
+        DetallePedido.objects.filter(id_pedido=pedido).update(direccion_entrega=pedido.direccion_entrega)
 
         producto.stock -= cantidad
         producto.save()
