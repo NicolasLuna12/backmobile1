@@ -141,17 +141,20 @@ class VerDashboard(APIView):
         vistaPedidos = Pedido.objects.prefetch_related('detalles').all().filter(id_usuario_id=id_usuario)
         print("holo")
 
-        carrito_data = [
-            {
+        carrito_data = []
+        for pedido in vistaPedidos:
+            direccion_entrega = pedido.direccion_entrega
+            if not direccion_entrega or direccion_entrega == 'Sin especificar':
+                direccion_entrega = usuario.direccion if usuario.direccion else 'Sin especificar'
+            carrito_data.append({
                 "id_pedidos": pedido.id_pedidos,
                 "fecha_pedido": pedido.fecha_pedido,
-                "direccion_entrega": pedido.direccion_entrega,
+                "direccion_entrega": direccion_entrega,
                 "estado": pedido.estado,
                 "detalles": DetallePedidoSerializer(pedido.detalles.all(), many=True).data
-                } 
-                        for pedido in vistaPedidos]
+            })
 
-        return Response( { "results": carrito_data} )
+        return Response({"results": carrito_data})
 
 class ModificarCantidadProductoCarrito(APIView):
     permission_classes = [IsAuthenticated]
