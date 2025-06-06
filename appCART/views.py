@@ -21,15 +21,10 @@ class AgregarProductoAlCarrito(APIView):
         cantidad = int(request.data.get('cantidad'))
         id_usuario = request.user.id_usuario
         direccion = request.data.get('direccion')
-        # Si el usuario envía una dirección, actualizarla en su perfil y en todos los detalles del pedido pendiente
+        # Si el usuario envía una dirección, actualizarla en su perfil
         if direccion:
             request.user.direccion = direccion
             request.user.save()
-            # Actualizar dirección en todos los detalles del pedido pendiente
-            detalles_pendientes = DetallePedido.objects.filter(id_pedido=pedido)
-            for detalle in detalles_pendientes:
-                detalle.direccion_entrega = direccion
-                detalle.save()
         # Si no hay dirección en la petición, usar la del perfil
         if not direccion and hasattr(request.user, 'direccion') and request.user.direccion:
             direccion = request.user.direccion
@@ -61,8 +56,8 @@ class AgregarProductoAlCarrito(APIView):
 
         detallePedido, detalleCreated = DetallePedido.objects.get_or_create( precio_producto=producto.precio, id_pedido_id=pedido.id_pedidos, id_producto_id= producto.id_producto)
 
-        # Guardar la dirección de entrega en el detalle con el valor de la variable direccion
-        detallePedido.direccion_entrega = direccion
+        # Siempre sincronizar la dirección de entrega del detalle con la del pedido
+        detallePedido.direccion_entrega = pedido.direccion_entrega
         if detalleCreated:
             detallePedido.cantidad_productos = cantidad
             detallePedido.subtotal = detallePedido.cantidad_productos * detallePedido.precio_producto
