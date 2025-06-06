@@ -141,13 +141,11 @@ class VerDashboard(APIView):
         usuario = request.user
         id_usuario = usuario.id_usuario
         vistaPedidos = Pedido.objects.prefetch_related('detalles').all().filter(id_usuario_id=id_usuario)
-        print("holo")
 
         carrito_data = []
         for pedido in vistaPedidos:
+            # Usar siempre la dirección guardada en el pedido
             direccion_entrega = pedido.direccion_entrega
-            if not direccion_entrega or direccion_entrega == 'Sin especificar':
-                direccion_entrega = usuario.direccion if usuario.direccion else 'Sin especificar'
             carrito_data.append({
                 "id_pedidos": pedido.id_pedidos,
                 "fecha_pedido": pedido.fecha_pedido,
@@ -207,6 +205,13 @@ class VerDetallePedido(APIView):
             
             # Calcular monto total
             monto_total = sum(detalle.subtotal for detalle in detalles)
+
+            # Lógica mejorada de dirección de entrega
+            direccion_entrega = None
+            if detalles.exists():
+                direccion_entrega = detalles.first().direccion_entrega
+            if not direccion_entrega or direccion_entrega == 'Sin especificar':
+                direccion_entrega = usuario.direccion if usuario.direccion else 'Sin especificar'
             
             # Crear respuesta con información completa
             respuesta = {
@@ -214,7 +219,7 @@ class VerDetallePedido(APIView):
                     'id_pedidos': pedido.id_pedidos,
                     'fecha_pedido': pedido.fecha_pedido,
                     'hora_pedido': pedido.hora_pedido,
-                    'direccion_entrega': pedido.direccion_entrega,
+                    'direccion_entrega': direccion_entrega,
                     'estado': pedido.estado,
                     'monto_total': monto_total
                 },
