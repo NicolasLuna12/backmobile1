@@ -21,15 +21,16 @@ class AgregarProductoAlCarrito(APIView):
         cantidad = int(request.data.get('cantidad'))
         id_usuario = request.user.id_usuario
         direccion = request.data.get('direccion')
+        
         # Si el usuario envía una dirección, actualizarla en su perfil
         if direccion:
             request.user.direccion = direccion
             request.user.save()
-        # Si no hay dirección en la petición, usar la del perfil
-        if not direccion and hasattr(request.user, 'direccion') and request.user.direccion:
+        # Si no hay dirección en la petición, intentar usar la del perfil
+        elif request.user.direccion:
             direccion = request.user.direccion
-        # Si sigue sin haber dirección, poner 'Sin especificar'
-        if not direccion:
+        # Si no hay dirección en ninguna parte, usar valor por defecto
+        else:
             direccion = 'Sin especificar'
 
         if cantidad > producto.stock:
@@ -92,7 +93,7 @@ class VerCarrito(APIView):
 
 class ConfirmarPedido(APIView):
     permission_classes = [IsAuthenticated]
-
+    
     def post(self, request):
         try:
             usuario = request.user
@@ -103,7 +104,12 @@ class ConfirmarPedido(APIView):
             
             if not detalles_carrito.exists():
                 return Response({'error': 'El carrito está vacío'}, status=400)
-
+                
+            # Verificar que el pedido tenga dirección de entrega
+            if not pedido.direccion_entrega or pedido.direccion_entrega == 'Sin especificar':
+                if usuario.direccion:
+                    pedido.direccion_entrega = usuario.direccion
+                    
             detalles_carrito.delete()
             pedido.estado = "Aprobado"
             pedido.save()
@@ -136,18 +142,25 @@ class EliminarProductoDelCarrito(APIView):
 
 class VerDashboard(APIView):
     permission_classes = [IsAuthenticated]
-
+    
     def get(self, request):
         usuario = request.user
         id_usuario = usuario.id_usuario
         vistaPedidos = Pedido.objects.prefetch_related('detalles').all().filter(id_usuario_id=id_usuario)
-        print("holo")
-
+        # Eliminar print innecesario
+        
         carrito_data = []
         for pedido in vistaPedidos:
+            # Obtener dirección del pedido, o usar la del usuario, o usar valor por defecto
             direccion_entrega = pedido.direccion_entrega
             if not direccion_entrega or direccion_entrega == 'Sin especificar':
                 direccion_entrega = usuario.direccion if usuario.direccion else 'Sin especificar'
+                
+                # Si estamos usando la dirección del usuario, actualizar también el pedido
+                if direccion_entrega != 'Sin especificar' and direccion_entrega != pedido.direccion_entrega:
+                    pedido.direccion_entrega = direccion_entrega
+                    pedido.save()
+                
             carrito_data.append({
                 "id_pedidos": pedido.id_pedidos,
                 "fecha_pedido": pedido.fecha_pedido,
@@ -208,13 +221,18 @@ class VerDetallePedido(APIView):
             # Calcular monto total
             monto_total = sum(detalle.subtotal for detalle in detalles)
             
+            # Verificar la dirección de entrega
+            direccion_entrega = pedido.direccion_entrega
+            if not direccion_entrega or direccion_entrega == 'Sin especificar':
+                direccion_entrega = usuario.direccion if usuario.direccion else 'Sin especificar'
+            
             # Crear respuesta con información completa
             respuesta = {
                 'pedido': {
                     'id_pedidos': pedido.id_pedidos,
                     'fecha_pedido': pedido.fecha_pedido,
                     'hora_pedido': pedido.hora_pedido,
-                    'direccion_entrega': pedido.direccion_entrega,
+                    'direccion_entrega': direccion_entrega,
                     'estado': pedido.estado,
                     'monto_total': monto_total
                 },
