@@ -25,8 +25,8 @@ class AgregarProductoAlCarrito(APIView):
         if direccion:
             request.user.direccion = direccion
             request.user.save()
-        # Si no hay dirección en la petición, usar la del perfil (de la base de datos)
-        if not direccion:
+        # Si no hay dirección en la petición, usar la del perfil
+        if not direccion and hasattr(request.user, 'direccion') and request.user.direccion:
             direccion = request.user.direccion
         # Si sigue sin haber dirección, poner 'Sin especificar'
         if not direccion:
