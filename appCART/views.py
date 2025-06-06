@@ -21,7 +21,10 @@ class AgregarProductoAlCarrito(APIView):
         cantidad = int(request.data.get('cantidad'))
         id_usuario = request.user.id_usuario
         direccion = request.data.get('direccion')
-        
+
+        current_time = datetime.now().time()
+        pedido, created  = Pedido.objects.get_or_create(id_usuario_id=id_usuario, estado="Pendiente")
+
         # Si el usuario envía una dirección, actualizarla en su perfil
         if direccion:
             request.user.direccion = direccion
@@ -39,8 +42,6 @@ class AgregarProductoAlCarrito(APIView):
         if cantidad > producto.stock:
             return Response({'error': 'Stock insuficiente'}, status=400)
 
-        current_time = datetime.now().time()
-        pedido, created  = Pedido.objects.get_or_create(id_usuario_id=id_usuario, estado="Pendiente")
         # Actualizar dirección de entrega siempre
         pedido.direccion_entrega = direccion
         pedido.save()
