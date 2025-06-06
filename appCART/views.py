@@ -14,7 +14,7 @@ from rest_framework import status
 
 class AgregarProductoAlCarrito(APIView):
     permission_classes = [IsAuthenticated]
-
+    
     def post(self, request, producto_id):
 
         producto = Producto.objects.get(pk=producto_id)
@@ -29,8 +29,12 @@ class AgregarProductoAlCarrito(APIView):
         pedido, created  = Pedido.objects.get_or_create(id_usuario_id=id_usuario, estado="Pendiente")
 
         if created:
-            pedido.hora_pedido= current_time
-            pedido.direccion_entrega=direccion
+            pedido.hora_pedido = current_time
+            # Si no se proporciona dirección en la solicitud, usar la del perfil del usuario
+            if not direccion and hasattr(request.user, 'direccion') and request.user.direccion:
+                direccion = request.user.direccion
+            
+            pedido.direccion_entrega = direccion
             pedido.fecha_pedido = date.today()
             pedido.save()
 
