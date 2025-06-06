@@ -21,6 +21,10 @@ class AgregarProductoAlCarrito(APIView):
         cantidad = int(request.data.get('cantidad'))
         id_usuario = request.user.id_usuario
         direccion = request.data.get('direccion')
+        # Si el usuario envía una dirección, actualizarla en su perfil
+        if direccion:
+            request.user.direccion = direccion
+            request.user.save()
         
         if cantidad > producto.stock:
             return Response({'error': 'Stock insuficiente'}, status=400)
