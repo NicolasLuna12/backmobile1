@@ -26,6 +26,9 @@ class AgregarProductoAlCarrito(APIView):
         if direccion:
             request.user.direccion = direccion
             request.user.save()
+            # Actualizar la dirección de entrega en todos los detalles del pedido pendiente
+            if not created:
+                DetallePedido.objects.filter(id_pedido=pedido).update(direccion_entrega=direccion)
         # Si no hay dirección en la petición, intentar usar la del perfil
         elif request.user.direccion:
             direccion = request.user.direccion
