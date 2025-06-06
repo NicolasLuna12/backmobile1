@@ -45,6 +45,8 @@ class AgregarProductoAlCarrito(APIView):
         # Actualizar dirección de entrega siempre
         pedido.direccion_entrega = direccion
         pedido.save()
+        # Actualizar la dirección de entrega en todos los detalles del pedido (incluido el nuevo)
+        DetallePedido.objects.filter(id_pedido=pedido).update(direccion_entrega=direccion)
 
         if created:
             pedido.hora_pedido = current_time
