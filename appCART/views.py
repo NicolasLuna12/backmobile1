@@ -32,13 +32,17 @@ class AgregarProductoAlCarrito(APIView):
         current_time = datetime.now().time()
         pedido, created  = Pedido.objects.get_or_create(id_usuario_id=id_usuario, estado="Pendiente")
 
+        # Actualizar dirección de entrega si el usuario envía una dirección
+        if direccion:
+            pedido.direccion_entrega = direccion
+            pedido.save()
+
         if created:
             pedido.hora_pedido = current_time
-            # Si no se proporciona dirección en la solicitud, usar la del perfil del usuario
             if not direccion and hasattr(request.user, 'direccion') and request.user.direccion:
                 direccion = request.user.direccion
-            
-            pedido.direccion_entrega = direccion
+            if not pedido.direccion_entrega:
+                pedido.direccion_entrega = direccion
             pedido.fecha_pedido = date.today()
             pedido.save()
 
