@@ -262,7 +262,7 @@ class VerDetallePedido(APIView):
 class EntregarPedido(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def put(self, request):
         id_pedidos = request.data.get('id_pedidos')
         if not id_pedidos:
             return Response({'error': 'Falta el id del pedido'}, status=400)
