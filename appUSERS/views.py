@@ -13,15 +13,19 @@ class CreateUsuarioView(generics.CreateAPIView):
         # Obtener el correo electrónico del nuevo registro
         email = request.data.get('email')
         
-        if email:
-            # Buscar si existe un usuario inactivo con este mismo correo como último correo
+        if email:            # Buscar si existe un usuario inactivo con este mismo correo como último correo
             from appUSERS.models import Usuario
             try:
-                inactive_user = Usuario.objects.get(last_email=email, is_active=False)
+                # Usar filter en vez de get para manejar el caso de múltiples usuarios con el mismo email
+                inactive_users = Usuario.objects.filter(last_email=email, is_active=False)
                 
-                # Si lo encontramos, vamos a reactivar al usuario y actualizar sus datos
-                inactive_user.is_active = True
-                inactive_user.email = email  # Restauramos el email original
+                if inactive_users.exists():
+                    # Tomar el primer usuario inactivo encontrado (o podríamos usar el más reciente)
+                    inactive_user = inactive_users.first()
+                    
+                    # Si lo encontramos, vamos a reactivar al usuario y actualizar sus datos
+                    inactive_user.is_active = True
+                    inactive_user.email = email  # Restauramos el email original
                 
                 # Actualizamos los datos con la nueva información
                 if 'nombre' in request.data:
