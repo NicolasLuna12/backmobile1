@@ -68,27 +68,24 @@ class DeleteProfileView(APIView):
 
     def delete(self, request):
         user = request.user
-        carrito = Carrito.objects.filter(usuario=user).first()
-
-        if carrito and carrito.productos.exists():
-            #return Response({"detalle": "No se puede eliminar el perfil porque el carrito contiene productos."}, status=status.HTTP_400_BAD_REQUEST)
-            user.delete()
         
-        if carrito:
-            carrito.delete()
-
+        # En lugar de eliminar físicamente, desactivamos la cuenta (borrado lógico)
+        user.is_active = False
         
-        pedidos = Pedido.objects.filter(id_usuario=user)
-        if pedidos.exists():
-       
-            user.delete()
-            return Response({"detalle": "Perfil eliminado satisfactoriamente."}, status=status.HTTP_200_OK)
+        # También podemos limitar el acceso a datos personales
+        user.email = f"deleted_{user.id_usuario}@example.com"  # Evitar conflictos al registrarse de nuevo
+        
+        # Opcional: podemos limpiar algunos datos sensibles pero manteniendo el registro
+        # user.nombre = "Usuario"
+        # user.apellido = "Eliminado"
+        # user.telefono = ""
+        # user.direccion = ""
+        # user.imagen_perfil_url = ""
+        
+        # Guardamos los cambios
+        user.save()
 
-        user.delete()
-
-        return Response({"detalle": "Perfil y carrito eliminados satisfactoriamente."}, status=status.HTTP_200_OK)
-
-        return Response({"detalle": "Perfil y carrito eliminados satisfactoriamente."}, status=status.HTTP_200_OK)
+        return Response({"detalle": "Cuenta desactivada correctamente. Puedes volver a registrarte en cualquier momento."}, status=status.HTTP_200_OK)
 
 class UpdateProfileImageView(APIView):
     permission_classes = [permissions.IsAuthenticated]
