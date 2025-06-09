@@ -33,6 +33,7 @@ class Usuario(AbstractBaseUser,PermissionsMixin):
     id_usuario = models.AutoField(primary_key=True)  
     nombre = models.CharField(max_length=45)
     email = models.EmailField(unique=True)  
+    last_email = models.EmailField(blank=True, null=True)  # Almacena el email anterior cuando el usuario se desactiva
     apellido = models.CharField(max_length=45)
     telefono = models.CharField(max_length=13)
     password = models.CharField(max_length=128)
