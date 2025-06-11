@@ -75,7 +75,6 @@ class CreateTokenView(APIView):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        
         refresh = RefreshToken.for_user(user)
         access_token = refresh.access_token
         return Response({
@@ -85,7 +84,8 @@ class CreateTokenView(APIView):
             'access': str(access_token),
             'nombre': user.nombre, 
             'apellido': user.apellido,
-            'telefono': user.telefono,
+            'telefono': user.telefono,                          
+            'direccion': user.direccion,
             'admin': user.is_superuser,
             'imagen_perfil_url': user.imagen_perfil_url
         }, status=status.HTTP_200_OK)
