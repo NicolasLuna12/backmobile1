@@ -11,6 +11,7 @@ from rest_framework import status
 from asgiref.sync import sync_to_async
 from appUSERS.models import Usuario
 from rest_framework import status
+import pyotp
 
 class AgregarProductoAlCarrito(APIView):
     permission_classes = [IsAuthenticated]
@@ -275,4 +276,60 @@ class EntregarPedido(APIView):
             return Response({'message': 'Pedido entregado correctamente'})
         except Pedido.DoesNotExist:
             return Response({'error': 'Pedido no encontrado'}, status=404)
+
+class IniciarPagoView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        usuario = request.user
+        id_usuario = usuario.id_usuario
+        tarjeta_nombre = request.data.get('tarjeta_nombre')  # Nombre del titular de la tarjeta
+        detalles_carrito = Carrito.objects.filter(usuario_id=id_usuario)
+        pedido = Pedido.objects.get(id_usuario_id=id_usuario, estado="Pendiente")
+        if not detalles_carrito.exists():
+            return Response({'error': 'El carrito está vacío'}, status=400)
+        # Calcular monto total
+        monto_total = 0
+        for item in detalles_carrito:
+            monto_total += item.cantidad * item.producto.precio
+        # Verificar condiciones de 2FA
+        requiere_2fa = False
+        motivo = []
+        if monto_total > 50000:
+            requiere_2fa = True
+            motivo.append('monto')
+        if tarjeta_nombre and tarjeta_nombre.strip().lower() != f"{usuario.nombre} {usuario.apellido}".strip().lower():
+            requiere_2fa = True
+            motivo.append('titular')
+        if requiere_2fa:
+            if not usuario.twofa_enabled:
+                return Response({'error': '2FA requerido pero no configurado. Configura Google Authenticator en tu perfil.'}, status=403)
+            return Response({'requiere_2fa': True, 'motivo': motivo, 'monto_total': monto_total})
+        # Si no requiere 2FA, proceder a confirmar el pedido
+        detalles_carrito.delete()
+        pedido.estado = "Aprobado"
+        pedido.save()
+        return Response({'message': 'Pedido confirmado sin 2FA', 'monto_total': monto_total})
+
+class ConfirmarPago2FAView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        usuario = request.user
+        id_usuario = usuario.id_usuario
+        code = request.data.get('code')
+        detalles_carrito = Carrito.objects.filter(usuario_id=id_usuario)
+        pedido = Pedido.objects.get(id_usuario_id=id_usuario, estado="Pendiente")
+        if not detalles_carrito.exists():
+            return Response({'error': 'El carrito está vacío'}, status=400)
+        if not usuario.twofa_enabled or not usuario.twofa_secret:
+            return Response({'error': '2FA no configurado.'}, status=403)
+        totp = pyotp.TOTP(usuario.twofa_secret)
+        if not totp.verify(code):
+            return Response({'error': 'Código 2FA inválido.'}, status=400)
+        # Si el código es válido, aprobar el pedido
+        detalles_carrito.delete()
+        pedido.estado = "Aprobado"
+        pedido.save()
+        return Response({'message': 'Pedido confirmado con 2FA'})
 

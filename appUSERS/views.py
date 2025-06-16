@@ -4,7 +4,10 @@ from appUSERS.serializers import UsuarioSerializer, AuthTokenSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from rest_framework.permissions import IsAuthenticated
+from .models import Usuario
+from .serializers import TwoFASetupSerializer, TwoFAVerifySerializer
+import pyotp
 
 class CreateUsuarioView(generics.CreateAPIView):
     serializer_class = UsuarioSerializer
@@ -174,3 +177,29 @@ class PerfilUsuarioView(APIView):
     def get(self, request):
         serializer = UsuarioSerializer(request.user)
         return Response(serializer.data)
+
+class TwoFASetupView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if not user.twofa_secret:
+            user.twofa_secret = pyotp.random_base32()
+            user.save()
+        serializer = TwoFASetupSerializer(user)
+        return Response(serializer.data)
+
+class TwoFAVerifyView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        serializer = TwoFAVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        code = serializer.validated_data['code']
+        totp = pyotp.TOTP(user.twofa_secret)
+        if totp.verify(code):
+            user.twofa_enabled = True
+            user.save()
+            return Response({'verified': True})
+        return Response({'verified': False}, status=400)

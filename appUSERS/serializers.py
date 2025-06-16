@@ -1,5 +1,10 @@
 from django.contrib.auth import get_user_model,authenticate
 from rest_framework import serializers
+from .models import Usuario
+import pyotp
+import qrcode
+import base64
+from io import BytesIO
 
 class UsuarioSerializer(serializers.ModelSerializer):
     imagen_perfil_url = serializers.CharField(required=False, allow_blank=True, allow_null=True)
@@ -53,3 +58,25 @@ class AuthTokenSerializer(serializers.Serializer):
         
         data['user'] = user
         return data
+
+class TwoFASetupSerializer(serializers.ModelSerializer):
+    qr_code = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Usuario
+        fields = ['twofa_secret', 'twofa_enabled', 'qr_code']
+        read_only_fields = ['qr_code']
+
+    def get_qr_code(self, obj):
+        if not obj.twofa_secret:
+            return None
+        totp = pyotp.TOTP(obj.twofa_secret)
+        uri = totp.provisioning_uri(name=obj.email, issuer_name="MiApp")
+        qr = qrcode.make(uri)
+        buffer = BytesIO()
+        qr.save(buffer, format="PNG")
+        img_str = base64.b64encode(buffer.getvalue()).decode()
+        return f"data:image/png;base64,{img_str}"
+
+class TwoFAVerifySerializer(serializers.Serializer):
+    code = serializers.CharField()
