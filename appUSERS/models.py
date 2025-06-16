@@ -38,8 +38,6 @@ class Usuario(AbstractBaseUser,PermissionsMixin):
     telefono = models.CharField(max_length=13)
     password = models.CharField(max_length=128)
     direccion = models.CharField(max_length=255, blank=True, null=True)
-    twofa_secret = models.CharField(max_length=32, blank=True, null=True)
-    twofa_enabled = models.BooleanField(default=False)
     imagen_perfil_url = models.URLField(max_length=255, blank=True, null=True)
     is_staff = models.BooleanField(default=False)  
     is_active = models.BooleanField(default=True)

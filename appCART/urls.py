@@ -10,7 +10,5 @@ urlpatterns = [
     path('modificar_cantidad/<int:carrito_id>/', ModificarCantidadProductoCarrito.as_view(), name='modificar_cantidad_producto_carrito'),
     path('detalle_pedido/<int:pedido_id>/', VerDetallePedido.as_view(), name='detalle_pedido'),
     path('ver_dashboard/entregar/', EntregarPedido.as_view(), name='entregar_pedido'),
-    path('iniciar_pago/', IniciarPagoView.as_view(), name='iniciar_pago'),
-    path('confirmar_pago_2fa/', ConfirmarPago2FAView.as_view(), name='confirmar_pago_2fa'),
 ]
 
