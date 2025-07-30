@@ -137,8 +137,8 @@ DATABASES = {
         'NAME': 'railway',
         'USER': 'root',
         'PASSWORD': 'BGVqserZKnEpylRlbhwyQcgSmmoocqAt',
-        'HOST': 'shortline.proxy.rlwy.net',
-        'PORT': '45482',
+        'HOST': 'mainline.proxy.rlwy.net',
+        'PORT': '28291',
         'OPTIONS': {
             'sql_mode': 'traditional',
             }
