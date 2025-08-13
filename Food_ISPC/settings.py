@@ -26,10 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-lq50bruj9vl$-l1#drn=*iof2z%f%nl!j05(ce#*s$e2xhixc='
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-lq50bruj9vl$-l1#drn=*iof2z%f%nl!j05(ce#*s$e2xhixc=')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = ['backmobile1.onrender.com', 'localhost', '127.0.0.1']
 
@@ -139,11 +139,11 @@ WSGI_APPLICATION = 'Food_ISPC.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'railway',
-        'USER': 'root',
-        'PASSWORD': 'JSpXwaSxdOqmfOjXvcmJhdOUAIWmGzaN',
-        'HOST': 'shinkansen.proxy.rlwy.net',
-        'PORT': '16834',
+        'NAME': os.getenv('DB_NAME', 'railway'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {
             'sql_mode': 'traditional',
         },
@@ -210,7 +210,7 @@ SIMPLE_JWT = {
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': "djp80kwaj",  # Reemplaza por tu cloud name real
-    'API_KEY': "285359299675698",             # Reemplaza por tu API key real
-    'API_SECRET': "CILwUfSuiDsJ977SrrCvPQcgJz4",       # Reemplaza por tu API secret real
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
 }
