@@ -57,15 +57,20 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
             'level': 'INFO',
+            'propagate': True,
+        },
+        'appUSERS': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
             'propagate': True,
         },
         'appCART': {

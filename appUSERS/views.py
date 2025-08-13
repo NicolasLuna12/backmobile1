@@ -4,6 +4,9 @@ from appUSERS.serializers import UsuarioSerializer, AuthTokenSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CreateUsuarioView(generics.CreateAPIView):
@@ -11,25 +14,41 @@ class CreateUsuarioView(generics.CreateAPIView):
     
     def create(self, request, *args, **kwargs):
         try:
+            logger.info(f"Datos recibidos: {request.data}")
+            
             # Validar campos requeridos
             required_fields = ['email', 'password', 'nombre', 'apellido', 'telefono']
+            missing_fields = []
             for field in required_fields:
                 if field not in request.data or not request.data[field]:
-                    return Response({
-                        'error': f'El campo {field} es requerido'
-                    }, status=status.HTTP_400_BAD_REQUEST)
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                return Response({
+                    'error': f'Campos requeridos faltantes: {", ".join(missing_fields)}'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Validar que el email no exista ya
+            from appUSERS.models import Usuario
+            if Usuario.objects.filter(email=request.data['email']).exists():
+                return Response({
+                    'error': 'Ya existe un usuario con este email'
+                }, status=status.HTTP_400_BAD_REQUEST)
             
             # Proceso normal de creación
             serializer = self.get_serializer(data=request.data)
             if serializer.is_valid():
                 user = serializer.save()
+                logger.info(f"Usuario creado exitosamente: {user.email}")
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
+                logger.error(f"Errores de validación: {serializer.errors}")
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 
         except Exception as e:
+            logger.error(f"Error interno al crear usuario: {str(e)}", exc_info=True)
             return Response({
-                'error': 'Error al crear usuario',
+                'error': 'Error interno del servidor',
                 'details': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
