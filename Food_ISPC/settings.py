@@ -33,12 +33,9 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = ['backmobile1.onrender.com', 'localhost', '127.0.0.1']
 
-# CORS allowed 
+# CORS allowed - SOLO para producción
 CORS_ALLOWED_ORIGINS = [
-    "https://example.com",
-    "http://localhost:4200",
     "https://ispcfood.netlify.app",
-    "https://moispc.github.io"
 ]
 
 # Logging configuration
@@ -91,6 +88,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'rest_framework.authtoken',
     "corsheaders",
     'appUSERS.apps.AppusersConfig',
@@ -100,17 +99,39 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    'django.middleware.security.SecurityMiddleware',
+    "django.middleware.security.SecurityMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',  # Deshabilitado temporalmente para pruebas
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',    
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Security Settings
+SECURE_SSL_REDIRECT = not DEBUG  # Solo en producción
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# CSRF Settings for API
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_TRUSTED_ORIGINS = [
+    "https://backmobile1.onrender.com",  # Backend en Render
+    "https://ispcfood.netlify.app",      # SOLO frontend permitido
+]
+
+# Session Security
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
 
 ROOT_URLCONF = 'Food_ISPC.urls'
 
@@ -202,8 +223,25 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'id_usuario',
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=36500),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=36500),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),  # Token expira en 2 horas
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),  # Refresh token expira en 30 días
+    'ROTATE_REFRESH_TOKENS': True,  # Rotar refresh tokens
+    'BLACKLIST_AFTER_ROTATION': True,  # Lista negra de tokens antiguos
+    'UPDATE_LAST_LOGIN': True,  # Actualizar último login
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'JWK_URL': None,
+    'LEEWAY': 0,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
+    'JTI_CLAIM': 'jti',
 }
 
 
