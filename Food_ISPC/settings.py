@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-lq50bruj9vl$-l1#drn=*iof2z%f%nl!j05(ce#*s$e2xhixc='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['backmobile1.onrender.com', 'localhost', '127.0.0.1']
 
@@ -99,7 +99,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',  # Deshabilitado temporalmente para pruebas
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',    
@@ -136,15 +136,12 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'railway',
         'USER': 'root',
-        'PASSWORD': 'hIjvBaGQbMgZoYdCGgSHBhHIzRXYFaMr',
-        'HOST': 'mainline.proxy.rlwy.net',
-        'PORT': '28291',
+        'PASSWORD': 'JSpXwaSxdOqmfOjXvcmJhdOUAIWmGzaN',
+        'HOST': 'shinkansen.proxy.rlwy.net',
+        'PORT': '16834',
         'OPTIONS': {
             'sql_mode': 'traditional',
-            }
-
-
-
+        },
     }
 }
 

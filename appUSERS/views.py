@@ -10,52 +10,28 @@ class CreateUsuarioView(generics.CreateAPIView):
     serializer_class = UsuarioSerializer
     
     def create(self, request, *args, **kwargs):
-        # Obtener el correo electrónico del nuevo registro
-        email = request.data.get('email')
-        
-        if email:            # Buscar si existe un usuario inactivo con este mismo correo como último correo
-            from appUSERS.models import Usuario
-            try:
-                # Usar filter en vez de get para manejar el caso de múltiples usuarios con el mismo email
-                inactive_users = Usuario.objects.filter(last_email=email, is_active=False)
-                
-                if inactive_users.exists():
-                    # Tomar el primer usuario inactivo encontrado (o podríamos usar el más reciente)
-                    inactive_user = inactive_users.first()
-                    
-                    # Si lo encontramos, vamos a reactivar al usuario y actualizar sus datos
-                    inactive_user.is_active = True
-                    inactive_user.email = email  # Restauramos el email original
-                
-                # Actualizamos los datos con la nueva información
-                if 'nombre' in request.data:
-                    inactive_user.nombre = request.data['nombre']
-                if 'apellido' in request.data:
-                    inactive_user.apellido = request.data['apellido']
-                if 'telefono' in request.data:
-                    inactive_user.telefono = request.data['telefono']
-                if 'direccion' in request.data:
-                    inactive_user.direccion = request.data['direccion']
-                if 'imagen_perfil_url' in request.data:
-                    inactive_user.imagen_perfil_url = request.data['imagen_perfil_url']
-                
-                # Si hay contraseña, la actualizamos
-                if 'password' in request.data:
-                    inactive_user.set_password(request.data['password'])
-                
-                # Guardamos los cambios
-                inactive_user.save()
-                
-                # Serializamos el usuario reactivado para devolverlo
-                serializer = self.get_serializer(inactive_user)
+        try:
+            # Validar campos requeridos
+            required_fields = ['email', 'password', 'nombre', 'apellido', 'telefono']
+            for field in required_fields:
+                if field not in request.data or not request.data[field]:
+                    return Response({
+                        'error': f'El campo {field} es requerido'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Proceso normal de creación
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid():
+                user = serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 
-            except Usuario.DoesNotExist:
-                # Si no existe un usuario inactivo con ese email, continuamos normal
-                pass
-        
-        # Proceso normal si no hay reactivación
-        return super().create(request, *args, **kwargs)
+        except Exception as e:
+            return Response({
+                'error': 'Error al crear usuario',
+                'details': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class RetrieveUpdateUsuarioView(generics.RetrieveUpdateAPIView):
