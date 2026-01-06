@@ -1,1 +1,1 @@
-# appFOOD
+# appFOOD - Food catalog module

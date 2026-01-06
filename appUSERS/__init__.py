@@ -1,1 +1,1 @@
-# appUSERS
+# appUSERS - User management module

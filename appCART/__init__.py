@@ -1,1 +1,1 @@
-# appCART
+# appCART - Shopping cart module
