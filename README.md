@@ -3,6 +3,7 @@
 Este repositorio contiene el backend para la aplicación Food ISPC, un sistema de pedidos de comida en línea. El backend está desarrollado con Django y Django REST Framework.
 
 
+
 ## Características
 
 - Gestión de usuarios y autenticación con JWT
