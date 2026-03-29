@@ -37,6 +37,7 @@ ALLOWED_HOSTS = ['backmobile1.onrender.com', 'localhost', '127.0.0.1']
 # CORS allowed - SOLO para producción
 CORS_ALLOWED_ORIGINS = [
     "https://ispcfood.netlify.app",
+    "https://ispcfood.dev.ar",
 ]
 
 # Logging configuration
@@ -127,6 +128,7 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_TRUSTED_ORIGINS = [
     "https://backmobile1.onrender.com",  # Backend en Render
     "https://ispcfood.netlify.app",      # SOLO frontend permitido
+    "https://ispcfood.dev.ar",
 ]
 
 # Session Security
