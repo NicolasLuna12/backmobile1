@@ -34,10 +34,16 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = ['backmobile1.onrender.com', 'localhost', '127.0.0.1']
 
+# Render termina TLS delante de Django, por eso hay que confiar en el proxy
+# para que `SECURE_SSL_REDIRECT` no provoque redirecciones erróneas.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
 # CORS allowed - SOLO para producción
 CORS_ALLOWED_ORIGINS = [
     "https://ispcfood.netlify.app",
     "https://ispcfood.dev.ar",
+    "https://www.ispcfood.dev.ar",
 ]
 
 # Logging configuration
@@ -129,6 +135,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://backmobile1.onrender.com",  # Backend en Render
     "https://ispcfood.netlify.app",      # SOLO frontend permitido
     "https://ispcfood.dev.ar",
+    "https://www.ispcfood.dev.ar",
 ]
 
 # Session Security

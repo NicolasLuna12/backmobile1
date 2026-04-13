@@ -3,12 +3,20 @@ from .views import *
 
 urlpatterns = [
     path('agregar/<int:producto_id>/', AgregarProductoAlCarrito.as_view()),
+    path('agregar/<int:producto_id>', AgregarProductoAlCarrito.as_view()),
     path('ver/', VerCarrito.as_view()),
+    path('ver', VerCarrito.as_view()),
     path('confirmar/', ConfirmarPedido.as_view()),
+    path('confirmar', ConfirmarPedido.as_view()),
     path('eliminar/<int:carrito_id>/', EliminarProductoDelCarrito.as_view()),
+    path('eliminar/<int:carrito_id>', EliminarProductoDelCarrito.as_view()),
     path('ver_dashboard/', VerDashboard.as_view()),
+    path('ver_dashboard', VerDashboard.as_view()),
     path('modificar_cantidad/<int:carrito_id>/', ModificarCantidadProductoCarrito.as_view(), name='modificar_cantidad_producto_carrito'),
+    path('modificar_cantidad/<int:carrito_id>', ModificarCantidadProductoCarrito.as_view(), name='modificar_cantidad_producto_carrito_sin_slash'),
     path('detalle_pedido/<int:pedido_id>/', VerDetallePedido.as_view(), name='detalle_pedido'),
+    path('detalle_pedido/<int:pedido_id>', VerDetallePedido.as_view(), name='detalle_pedido_sin_slash'),
     path('ver_dashboard/entregar/', EntregarPedido.as_view(), name='entregar_pedido'),
+    path('ver_dashboard/entregar', EntregarPedido.as_view(), name='entregar_pedido_sin_slash'),
 ]
 
